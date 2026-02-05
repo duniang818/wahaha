@@ -1,0 +1,221 @@
+.daily-push-page {
+  padding: 2rem 0;
+  min-height: calc(100vh - 200px);
+}
+
+.page-title {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #667eea;
+  margin-bottom: 2rem;
+}
+
+.date-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.date-selector label {
+  font-weight: 500;
+  color: #333;
+}
+
+.date-selector input[type="date"] {
+  padding: 0.75rem;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.date-selector input[type="date"]:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.today-btn {
+  padding: 0.75rem 1.5rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.3s;
+}
+
+.today-btn:hover {
+  opacity: 0.8;
+}
+
+.daily-university-card {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.daily-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #eee;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.daily-date {
+  font-size: 1.2rem;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.daily-rank {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.daily-university-name {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.daily-university-name-en {
+  font-size: 1.2rem;
+  color: #666;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+.daily-university-country {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #667eea;
+  font-weight: 500;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.daily-intro {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.daily-intro h3 {
+  color: #667eea;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.daily-intro p {
+  color: #666;
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+
+.daily-highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.highlight-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.highlight-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.highlight-content {
+  flex: 1;
+}
+
+.highlight-content strong {
+  display: block;
+  color: #667eea;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.highlight-content p {
+  color: #666;
+  line-height: 1.6;
+}
+
+.view-full-details-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  margin-top: 2rem;
+}
+
+.view-full-details-btn:hover {
+  opacity: 0.9;
+}
+
+.daily-info {
+  max-width: 900px;
+  margin: 2rem auto 0;
+  padding: 1.5rem;
+  background: #e7f3ff;
+  border-radius: 8px;
+  border-left: 4px solid #2196F3;
+}
+
+.daily-info p {
+  color: #1976D2;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .daily-university-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .daily-university-name {
+    font-size: 2rem;
+  }
+  
+  .daily-highlights {
+    grid-template-columns: 1fr;
+  }
+  
+  .daily-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
