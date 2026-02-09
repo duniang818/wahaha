@@ -11,8 +11,10 @@ import CityFood from './components/CityFood';
 import TravelPlanner from './components/TravelPlanner';
 
 function App() {
+  // 确保basename正确设置
+  const basename = process.env.PUBLIC_URL || "";
   return (
-    <Router basename={process.env.PUBLIC_URL || "/"}>
+    <Router basename={basename}>
       <div className="App">
         <HeaderWrapper />
         <Routes>
