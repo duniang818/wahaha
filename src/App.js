@@ -12,7 +12,7 @@ import TravelPlanner from './components/TravelPlanner';
 
 function App() {
   return (
-    <Router basename="/">
+    <Router basename={process.env.PUBLIC_URL || "/"}>
       <div className="App">
         <HeaderWrapper />
         <Routes>

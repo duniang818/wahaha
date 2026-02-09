@@ -6,10 +6,14 @@
 
 ### 方法1：使用GitHub Actions自动部署（推荐）
 
-1. **推送代码到GitHub**
+1. **推送代码到GitHub, -u=--set-upstream,origin:远程仓库别名，main：分支**
    ```bash
    git push -u origin main
    ```
+   执行这条命令后，Git 会：
+   将本地 main 分支的所有代码和历史记录上传到远程仓库 origin。
+   在远程仓库自动创建一个名为 main 的分支（如果不存在）。
+   设置本地 main 分支“追踪”远程的 origin/main。
 
 2. **在GitHub上启用Pages**
    - 访问你的仓库：https://github.com/duniang818/duniang818.github.io
