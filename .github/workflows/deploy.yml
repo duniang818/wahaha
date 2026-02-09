@@ -52,6 +52,20 @@ jobs:
           cp build/index.html build/404.html
           echo "404.html created successfully"
       
+      - name: Create .nojekyll file
+        run: |
+          touch build/.nojekyll
+          echo ".nojekyll file created"
+      
+      - name: List build files
+        run: |
+          echo "=== Build directory contents ==="
+          ls -la build/
+          echo "=== Checking for index.html ==="
+          test -f build/index.html && echo "✅ index.html exists" || echo "❌ index.html missing"
+          echo "=== Checking for static folder ==="
+          test -d build/static && echo "✅ static folder exists" || echo "❌ static folder missing"
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
