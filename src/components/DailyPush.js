@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { worldUniversities, chineseUniversities } from '../data/universities';
 import './DailyPush.css';
 
 function DailyPush() {
   const navigate = useNavigate();
-  const allUniversities = [...worldUniversities, ...chineseUniversities];
+  const allUniversities = useMemo(() => [...worldUniversities, ...chineseUniversities], []);
   
   // 根据日期计算今天应该推送的学校
   const getTodayUniversity = () => {
@@ -28,7 +28,7 @@ function DailyPush() {
       setTodayUniversity(allUniversities[index]);
     };
     updateUniversity();
-  }, [selectedDate]);
+  }, [selectedDate, allUniversities]);
   
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);

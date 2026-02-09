@@ -31,7 +31,8 @@
 
 .nav {
   display: flex;
-  gap: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .nav-link {
@@ -39,8 +40,10 @@
   text-decoration: none;
   font-weight: 500;
   transition: opacity 0.3s;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 5px;
+  font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .nav-link:hover {
@@ -184,12 +187,19 @@
 }
 
 .social-link {
+  background: none;
+  border: none;
   color: #b0bec5;
   text-decoration: none;
   display: flex;
   align-items: center;
   gap: 10px;
   transition: color 0.3s;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+  text-align: left;
 }
 
 .social-link:hover {
