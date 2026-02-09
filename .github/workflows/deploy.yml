@@ -6,6 +6,8 @@ on:
       - main
       - master
   workflow_dispatch:
+  repository_dispatch:
+    types: [deploy]
 
 permissions:
   contents: read
