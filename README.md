@@ -1,20 +1,31 @@
-# 世界名校导航网站
+# 名校与旅行导航网站
 
-基于最新QS排名的世界名校和中国名校信息展示网站，部署在GitHub Pages上。
+基于最新QS排名的世界名校和中国名校信息展示网站，同时提供985大学分布、5A级景区、城市美食和旅行规划服务。
+
+🌐 **网站地址**: https://duniang818.github.io
 
 ## 功能特点
 
-- 📊 **QS排名数据**：基于最新QS世界大学排名，展示世界名校TOP10和中国名校TOP10
-- 🎓 **专业信息**：提供TOP5和BOTTOM5专业，以及对应的知名教授信息
-- 👥 **知名校友**：展示各校培养的杰出人才及其重要成就
-- 📝 **招生信息**：详细的招生门槛、进入方式、考试科目、考试时间等实用信息
-- 📅 **每日推送**：每天自动推送一所学校，帮助用户系统了解各校特色
+### 📚 教育信息
+- **世界名校TOP10**：基于最新QS排名，展示全球最顶尖的10所大学
+- **中国名校TOP10**：了解中国最优秀的10所大学
+- **985大学分布**：按城市查看985大学分布，了解各城市的教育资源
+- **学校详情**：包含专业信息、知名教授、校友、招生要求等
+
+### 🏛️ 旅游信息
+- **5A级景区**：全国5A级旅游景区，按城市划分
+- **城市美食**：各城市特色美食，推荐知名餐厅
+- **旅行规划**：智能规划旅行路线，选择交通工具，优化行程安排
+
+### 📅 其他功能
+- **每日推送**：每天自动推送一所学校的详细信息
 
 ## 技术栈
 
 - React 18
 - React Router 6
 - CSS3 (响应式设计)
+- GitHub Pages (部署)
 
 ## 本地开发
 
@@ -38,46 +49,20 @@ npm start
 npm run build
 ```
 
-## 部署到GitHub Pages
+## 部署
 
-### 1. 安装gh-pages
+项目使用GitHub Actions自动部署。详细部署说明请查看 [DEPLOY.md](./DEPLOY.md)
 
-```bash
-npm install --save-dev gh-pages
-```
+### 快速部署
 
-### 2. 配置package.json
+1. 推送代码到GitHub：
+   ```bash
+   git push origin main
+   ```
 
-package.json中已包含以下配置：
+2. 在GitHub仓库设置中启用Pages（选择GitHub Actions作为源）
 
-```json
-{
-  "homepage": "https://duniang818.github.io",
-  "scripts": {
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
-  }
-}
-```
-
-### 3. 部署
-
-```bash
-npm run deploy
-```
-
-这将：
-1. 构建生产版本
-2. 将build文件夹部署到GitHub Pages的gh-pages分支
-
-### 4. 配置GitHub Pages
-
-1. 前往GitHub仓库设置页面
-2. 进入 "Pages" 设置
-3. 选择 "gh-pages" 分支作为源
-4. 保存设置
-
-网站将在几分钟内上线：https://duniang818.github.io
+3. 等待自动部署完成
 
 ## 项目结构
 
@@ -87,25 +72,35 @@ npm run deploy
 │   └── index.html          # HTML模板
 ├── src/
 │   ├── components/         # React组件
-│   │   ├── UniversityList.js
-│   │   ├── UniversityDetail.js
-│   │   └── DailyPush.js
+│   │   ├── UniversityList.js      # 学校列表
+│   │   ├── UniversityDetail.js    # 学校详情
+│   │   ├── DailyPush.js           # 每日推送
+│   │   ├── City985List.js         # 985大学列表
+│   │   ├── Attractions5A.js       # 5A景区列表
+│   │   ├── CityFood.js            # 城市美食
+│   │   └── TravelPlanner.js       # 旅行规划器
 │   ├── data/              # 数据文件
-│   │   └── universities.js
+│   │   ├── universities.js        # 世界/中国名校数据
+│   │   ├── 985Universities.js     # 985大学数据
+│   │   ├── attractions5A.js       # 5A景区数据
+│   │   └── cityFood.js            # 城市美食数据
 │   ├── App.js             # 主应用组件
 │   ├── index.js           # 入口文件
 │   └── *.css              # 样式文件
+├── .github/
+│   └── workflows/
+│       └── deploy.yml     # GitHub Actions部署配置
 ├── package.json
 └── README.md
 ```
 
 ## 数据说明
 
-学校数据包含：
-- 基本信息：名称、英文名、国家、排名、简介
-- 专业信息：TOP5优势专业和BOTTOM5其他专业，以及对应教授
-- 知名校友：校友姓名和主要成就
-- 招生信息：招生门槛、进入方式、考试科目、考试时间、申请建议
+- **世界名校**：基于2024年QS世界大学排名
+- **中国名校**：基于2024年中国大学排名
+- **985大学**：38所985工程大学，按城市和排名分类
+- **5A景区**：74个5A级旅游景区，覆盖主要城市
+- **城市美食**：20+城市的特色美食和推荐餐厅
 
 ## 浏览器支持
 
@@ -117,3 +112,7 @@ npm run deploy
 ## 许可证
 
 MIT License
+
+## 贡献
+
+欢迎提交Issue和Pull Request！
