@@ -74,8 +74,14 @@ markdown_extensions:
 extra_css:
   - stylesheets/extra.css
 
+extra_javascript:
+  - javascripts/visitor-badge.js
+
 extra:
   comments: true
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/duniang818
