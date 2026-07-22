@@ -1,0 +1,227 @@
+/* 渡娘的空间 — 大V博客观感 + 响应式 */
+
+:root {
+  --dn-accent: #0d9488;
+  --dn-accent-2: #2563eb;
+  --dn-ink: #0f172a;
+  --dn-muted: #64748b;
+  --dn-card: rgba(255, 255, 255, 0.72);
+  --dn-radius: 1rem;
+}
+
+[data-md-color-scheme="slate"] {
+  --dn-ink: #e2e8f0;
+  --dn-muted: #94a3b8;
+  --dn-card: rgba(30, 41, 59, 0.72);
+}
+
+/* Hero */
+.dn-hero {
+  position: relative;
+  margin: 0 -0.8rem 2rem;
+  padding: clamp(2.2rem, 6vw, 3.6rem) clamp(1.2rem, 4vw, 2.5rem);
+  border-radius: calc(var(--dn-radius) + 0.25rem);
+  overflow: hidden;
+  color: #f8fafc;
+  background:
+    radial-gradient(900px 420px at 12% -20%, #14b8a6 0%, transparent 55%),
+    radial-gradient(700px 380px at 100% 10%, #3b82f6 0%, transparent 50%),
+    linear-gradient(145deg, #0f172a 0%, #1e293b 55%, #0f766e 140%);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.28);
+}
+
+.dn-hero h1 {
+  margin: 0 0 0.6rem;
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #fff !important;
+  border: 0 !important;
+}
+
+.dn-hero p {
+  margin: 0;
+  max-width: 36rem;
+  color: rgba(248, 250, 252, 0.86);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.dn-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.dn-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.dn-btn:hover {
+  transform: translateY(-2px);
+}
+
+.dn-btn-primary {
+  background: #fff;
+  color: #0f172a !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.dn-btn-ghost {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+/* Cards grid */
+.dn-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 2rem;
+}
+
+@media (max-width: 720px) {
+  .dn-grid {
+    grid-template-columns: 1fr;
+  }
+  .dn-hero {
+    margin: 0 0 1.5rem;
+  }
+}
+
+.dn-card {
+  display: block;
+  padding: 1.15rem 1.2rem 1.25rem;
+  border-radius: var(--dn-radius);
+  background: var(--dn-card);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  text-decoration: none !important;
+  color: inherit !important;
+  backdrop-filter: blur(8px);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.dn-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--dn-accent);
+  box-shadow: 0 14px 34px rgba(13, 148, 136, 0.15);
+}
+
+.dn-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.15rem;
+  color: var(--dn-ink);
+  border: 0 !important;
+}
+
+.dn-card p {
+  margin: 0;
+  color: var(--dn-muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.dn-kicker {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dn-accent);
+}
+
+/* Article polish */
+.md-typeset h1 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.md-typeset table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 0.75rem;
+}
+
+/* Author strip */
+.dn-author {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin: 2rem 0 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--dn-radius);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: var(--dn-card);
+}
+
+.dn-author-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #14b8a6, #2563eb);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.dn-author strong {
+  display: block;
+  font-size: 1.05rem;
+}
+
+.dn-author span {
+  color: var(--dn-muted);
+  font-size: 0.9rem;
+}
+
+/* Social row */
+.dn-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.dn-socials a {
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  font-size: 0.9rem;
+  text-decoration: none !important;
+}
+
+/* Comments spacing */
+.giscus,
+.dn-comments {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+/* Mobile nav comfort */
+@media (max-width: 600px) {
+  .md-header__title {
+    font-size: 0.95rem;
+  }
+  .md-typeset {
+    font-size: 0.92rem;
+  }
+}

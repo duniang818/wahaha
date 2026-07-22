@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(__dirname, "../..");
-export const POSTS_DIR = path.join(ROOT, "src/content/posts");
+export const DOCS_DIR = path.join(ROOT, "docs");
 export const OUT_DIR = path.join(ROOT, "sync/out");
 
 export function loadEnv() {
@@ -28,38 +28,104 @@ export function loadEnv() {
   }
 }
 
+function walkMd(dir, acc = []) {
+  if (!fs.existsSync(dir)) return acc;
+  for (const name of fs.readdirSync(dir)) {
+    const p = path.join(dir, name);
+    const st = fs.statSync(p);
+    if (st.isDirectory()) walkMd(p, acc);
+    else if (/\.(md|mdx)$/i.test(name)) acc.push(p);
+  }
+  return acc;
+}
+
+export function listPosts() {
+  return walkMd(DOCS_DIR).map(filePath => {
+    try {
+      return readPost(filePath);
+    } catch {
+      return null;
+    }
+  }).filter(Boolean);
+}
+
 /**
  * @param {string} slugOrPath
- * @returns {{ slug: string, filePath: string, frontmatter: Record<string, any>, body: string, raw: string }}
  */
 export function readPost(slugOrPath) {
   let filePath = slugOrPath;
   if (!path.isAbsolute(filePath) && !fs.existsSync(filePath)) {
-    const candidates = [
-      path.join(POSTS_DIR, slugOrPath),
-      path.join(POSTS_DIR, `${slugOrPath}.md`),
-      path.join(POSTS_DIR, `${slugOrPath}.mdx`),
-    ];
-    filePath = candidates.find(p => fs.existsSync(p));
+    const all = walkMd(DOCS_DIR);
+    const base = slugOrPath.replace(/\.(md|mdx)$/i, "");
+    filePath = all.find(
+      p =>
+        path.basename(p).replace(/\.(md|mdx)$/i, "") === base ||
+        p.replace(/\\/g, "/").endsWith(`/${base}.md`) ||
+        p.replace(/\\/g, "/").endsWith(`/${base}.mdx`)
+    );
+    if (!filePath) {
+      const direct = [
+        path.join(DOCS_DIR, slugOrPath),
+        path.join(DOCS_DIR, `${slugOrPath}.md`),
+        path.join(DOCS_DIR, "blog/posts", `${slugOrPath}.md`),
+      ];
+      filePath = direct.find(p => fs.existsSync(p));
+    }
   }
   if (!filePath || !fs.existsSync(filePath)) {
-    throw new Error(`找不到文章: ${slugOrPath}（请放在 src/content/posts/）`);
+    throw new Error(`找不到文章: ${slugOrPath}（在 docs/ 下）`);
   }
 
   const raw = fs.readFileSync(filePath, "utf8");
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  if (!match) {
-    throw new Error(`文章缺少 YAML frontmatter: ${filePath}`);
+  let frontmatter = {};
+  let body = raw.trim();
+  if (match) {
+    frontmatter = parseSimpleYaml(match[1]);
+    body = match[2].trim();
   }
 
-  const frontmatter = parseSimpleYaml(match[1]);
-  const body = match[2].trim();
+  const rel = path.relative(DOCS_DIR, filePath).replace(/\\/g, "/");
   const slug = path.basename(filePath).replace(/\.(md|mdx)$/i, "");
+  const isPrivatePath = rel.startsWith("private/");
 
-  return { slug, filePath, frontmatter, body, raw };
+  return {
+    slug,
+    filePath,
+    rel,
+    frontmatter,
+    body,
+    raw,
+    isPrivatePath,
+  };
 }
 
-/** 极简 YAML 解析：足够覆盖 AstroPaper frontmatter 常用字段 */
+/** 作者本机发布权限校验 */
+export function assertCanPublish(post, { allowPrivate = false } = {}) {
+  const vis = String(post.frontmatter.visibility || "public").toLowerCase();
+  if (post.isPrivatePath || vis === "private") {
+    if (!allowPrivate) {
+      throw new Error(
+        `拒绝发布：${post.rel} 为私密内容（visibility=private 或 docs/private/）。公开平台仅允许 public。`
+      );
+    }
+  }
+  if (post.frontmatter.draft === true || post.frontmatter.draft === "true") {
+    throw new Error(`拒绝发布：${post.rel} 仍为 draft。`);
+  }
+  return true;
+}
+
+export function allowedPlatforms(post) {
+  const raw = post.frontmatter.platforms;
+  if (!raw) return ["wechat", "xhs", "csdn", "zhihu", "feishu"];
+  if (Array.isArray(raw)) return raw.map(String);
+  return String(raw)
+    .split(/[,，\s]+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
 function parseSimpleYaml(text) {
   /** @type {Record<string, any>} */
   const data = {};
@@ -105,6 +171,7 @@ function unquote(s) {
 
 export function ensureOutDir() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
+  fs.mkdirSync(path.join(OUT_DIR, "logs"), { recursive: true });
   return OUT_DIR;
 }
 
@@ -121,8 +188,14 @@ export function markdownToPlain(md) {
 }
 
 export function getSiteUrl() {
-  return (process.env.SITE_URL || "https://duniang818.github.io").replace(
+  return (process.env.SITE_URL || "https://duniang818.github.io/wahaha").replace(
     /\/$/,
     ""
   );
+}
+
+export function appendLog(line) {
+  ensureOutDir();
+  const f = path.join(OUT_DIR, "logs", "publish.log");
+  fs.appendFileSync(f, `[${new Date().toISOString()}] ${line}\n`, "utf8");
 }

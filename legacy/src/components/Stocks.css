@@ -1,0 +1,14 @@
+.stocks-page { padding: 20px; }
+.stocks-page h2 { margin-bottom: 12px; }
+.stocks-page .favorites, .stocks-page .all-stocks { margin-bottom: 18px; }
+.stocks-page ul { list-style: none; padding-left: 0; }
+.stocks-page li { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+.link-like { background:none; border:none; color:#1976d2; cursor:pointer; padding:0; font-size:1rem; }
+.small { padding:4px 8px; font-size:0.9rem; cursor:pointer; }
+.empty { color:#666; }
+
+.stock-detail { padding: 20px; }
+.stock-detail .analysis ul { list-style: none; padding-left:0; }
+.stock-detail .chart { margin-top: 12px; border:1px solid #eee; padding:8px; background:#fafafa; }
+.stock-detail table { width:100%; border-collapse:collapse; margin-top:12px; }
+.stock-detail th, .stock-detail td { border:1px solid #eee; padding:6px 8px; font-size:0.9rem; }

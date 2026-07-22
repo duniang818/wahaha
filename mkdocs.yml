@@ -7,19 +7,20 @@ site_description: 教育 · 旅行 · 技术 · 生活 — 个人知识库与博
 
 theme:
   name: material
+  custom_dir: overrides
   language: zh
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: teal
+      primary: teal
+      accent: indigo
       toggle:
         icon: material/weather-night
         name: 切换暗色
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: teal
+      primary: teal
+      accent: indigo
       toggle:
         icon: material/weather-sunny
         name: 切换亮色
@@ -39,6 +40,8 @@ theme:
     - search.highlight
 
 docs_dir: docs
+exclude_docs: |
+  private/**
 not_in_nav: |
   /private/**/*.md
   /.md
@@ -53,6 +56,7 @@ markdown_extensions:
   - toc:
       permalink: true
   - attr_list
+  - md_in_html
   - def_list
   - tables
   - admonition
@@ -66,6 +70,19 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.tasklist:
       custom_checkbox: true
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  comments: true
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/duniang818
+    - icon: fontawesome/brands/weixin
+      link: https://duniang818.github.io/wahaha/about/
+    - icon: fontawesome/brands/zhihu
+      link: https://duniang818.github.io/wahaha/about/
 
 nav:
   - 首页: index.md
@@ -83,6 +100,7 @@ nav:
       - 民族概览: travel/ethnic-groups.md
   - 技术:
       - tech/index.md
+      - Giscus 评论配置: tech/giscus-setup.md
       - 工具:
           - tools/tools-index.md
           - 搭建博客: tools/如何利用Mkdocs+Material+GithubPages搭建个人博客.md

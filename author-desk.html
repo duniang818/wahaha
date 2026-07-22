@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>作者发布台（仅本机）</title>
+  <style>
+    body{font-family:system-ui,sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.6}
+    code,pre{background:#f4f4f5;padding:.15rem .35rem;border-radius:4px}
+    pre{padding:1rem;overflow:auto}
+    .warn{background:#fff7ed;border:1px solid #fdba74;padding:.8rem 1rem;border-radius:8px}
+    h1{font-size:1.6rem}
+  </style>
+</head>
+<body>
+  <h1>作者发布台（L1 权限 · 仅本机）</h1>
+  <p class="warn">此页不部署到公网。访客无法使用发布能力。密钥只放在本机 <code>.env</code>。</p>
+  <h2>单篇发布</h2>
+  <pre>npm run publish:one -- welcome --to wechat,xhs,csdn,zhihu
+npm run publish:one -- welcome --dry-run</pre>
+  <h2>批量发布</h2>
+  <pre>npm run publish:batch -- --tag 旅行 --to xhs,wechat --dry-run
+npm run publish:batch -- --tag 旅行 --to xhs</pre>
+  <h2>权限规则</h2>
+  <ul>
+    <li><code>docs/private/**</code> 或 <code>visibility: private</code> → 禁止外发</li>
+    <li><code>draft: true</code> → 禁止外发</li>
+    <li><code>platforms:</code> 白名单限制可发平台</li>
+  </ul>
+  <h2>本地预览博客</h2>
+  <pre>npm run dev
+# http://127.0.0.1:8000/</pre>
+</body>
+</html>

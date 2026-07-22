@@ -1,0 +1,387 @@
+.city-detail-page {
+  min-height: calc(100vh - 200px);
+}
+
+.city-hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 3rem 0;
+  margin-bottom: 2rem;
+}
+
+.city-hero h1 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.city-subtitle {
+  text-align: center;
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+
+.city-stats {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.stat-label {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.quick-plan-btn {
+  display: block;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.quick-plan-btn:hover {
+  transform: translateY(-2px);
+}
+
+.city-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  border-bottom: 2px solid #eee;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #666;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tab-btn:hover {
+  color: #667eea;
+}
+
+.tab-btn.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+.tab-content {
+  padding: 2rem 0;
+}
+
+.overview-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-card {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.info-card h3 {
+  color: #667eea;
+  margin-bottom: 0.75rem;
+  font-size: 1.2rem;
+}
+
+.info-card p {
+  color: #666;
+  line-height: 1.6;
+}
+
+.quick-links {
+  grid-column: 1 / -1;
+}
+
+.quick-links h3 {
+  color: #667eea;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.link-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: white;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.link-card:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+}
+
+.link-card.highlight {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.link-icon {
+  font-size: 2rem;
+}
+
+.items-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.category-section h3 {
+  color: #667eea;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #eee;
+}
+
+.items-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.item-card {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+}
+
+.item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.item-header h4 {
+  color: #333;
+  font-size: 1.1rem;
+  flex: 1;
+}
+
+.item-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-5a {
+  background: #ffc107;
+  color: white;
+}
+
+.badge-4a {
+  background: #17a2b8;
+  color: white;
+}
+
+.badge-3a {
+  background: #6c757d;
+  color: white;
+}
+
+.item-desc {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.price-tag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.price-tag.free {
+  background: #28a745;
+  color: white;
+}
+
+.price-tag.paid {
+  background: #ffc107;
+  color: #333;
+}
+
+.add-btn {
+  padding: 0.5rem 1rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.add-btn:hover {
+  opacity: 0.9;
+}
+
+.famous-place {
+  color: #667eea;
+  font-size: 0.9rem;
+}
+
+.badge-985 {
+  background: #ff6b6b;
+  color: white;
+}
+
+.badge-211 {
+  background: #4ecdc4;
+  color: white;
+}
+
+.admission-score {
+  color: #28a745;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.culture-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.culture-card {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #667eea;
+}
+
+.culture-card.highlight {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+  border-left-color: #ffc107;
+}
+
+.culture-card h3 {
+  color: #667eea;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.culture-card p {
+  color: #666;
+  line-height: 1.8;
+}
+
+.culture-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.culture-list li {
+  padding: 0.75rem 0;
+  color: #666;
+  line-height: 1.8;
+  border-bottom: 1px solid #eee;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.culture-list li:last-child {
+  border-bottom: none;
+}
+
+.culture-list li::before {
+  content: "•";
+  color: #667eea;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+@media (max-width: 768px) {
+  .city-hero h1 {
+    font-size: 2rem;
+  }
+
+  .city-stats {
+    gap: 1.5rem;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+  }
+
+  .city-tabs {
+    overflow-x: auto;
+  }
+
+  .items-list {
+    grid-template-columns: 1fr;
+  }
+
+  .overview-section {
+    grid-template-columns: 1fr;
+  }
+}

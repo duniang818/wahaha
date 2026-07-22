@@ -13,6 +13,7 @@ import {
   readPost,
   getSiteUrl,
   markdownToPlain,
+  assertCanPublish,
   OUT_DIR,
 } from "./lib/posts.js";
 
@@ -25,6 +26,7 @@ if (!slug) {
 }
 
 const post = readPost(slug);
+assertCanPublish(post);
 const title = String(post.frontmatter.title || post.slug);
 const tags = Array.isArray(post.frontmatter.tags) ? post.frontmatter.tags : [];
 const defaultTopics = (process.env.XHS_DEFAULT_TOPICS || "")

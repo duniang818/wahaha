@@ -1,0 +1,18 @@
+{
+  "name": "dunian-blog",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "mkdocs serve -a 127.0.0.1:8000",
+    "build": "mkdocs build",
+    "sync:wechat": "node sync/wechat.js",
+    "sync:xhs": "node sync/xiaohongshu.js",
+    "sync:csdn": "node sync/csdn.js",
+    "sync:zhihu": "node sync/zhihu.js",
+    "sync:feishu": "node sync/feishu.js",
+    "publish:one": "node sync/publish-all.js",
+    "publish:batch": "node sync/publish-all.js --batch",
+    "publish:dry": "node sync/publish-all.js --dry-run",
+    "desk": "node scripts/open-desk.js"
+  }
+}

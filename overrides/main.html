@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+  <meta name="theme-color" content="#0f172a" />
+{% endblock %}
+
+{% block content %}
+  {{ super() }}
+  {% if page and page.is_homepage %}
+  {% elif page and not page.is_homepage %}
+    <aside class="dn-author" aria-label="作者">
+      <div class="dn-author-avatar" aria-hidden="true">渡</div>
+      <div>
+        <strong>渡娘</strong>
+        <span>教育 · 旅行 · 技术 · 生活｜一键同步多平台</span>
+      </div>
+    </aside>
+  {% endif %}
+{% endblock %}

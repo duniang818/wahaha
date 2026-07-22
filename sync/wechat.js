@@ -17,6 +17,7 @@ import {
   readPost,
   getSiteUrl,
   markdownToPlain,
+  assertCanPublish,
   OUT_DIR,
 } from "./lib/posts.js";
 
@@ -28,10 +29,11 @@ if (!slug) {
   process.exit(1);
 }
 
+const post = readPost(slug);
+assertCanPublish(post);
 const appId = process.env.WECHAT_APP_ID;
 const appSecret = process.env.WECHAT_APP_SECRET;
 
-const post = readPost(slug);
 const title = String(post.frontmatter.title || post.slug);
 const digest = String(
   post.frontmatter.description || markdownToPlain(post.body).slice(0, 100)

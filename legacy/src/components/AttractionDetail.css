@@ -1,0 +1,300 @@
+.attraction-detail-page {
+  padding: 2rem 0;
+  min-height: calc(100vh - 200px);
+}
+
+.back-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  transition: opacity 0.3s;
+}
+
+.back-btn:hover {
+  opacity: 0.8;
+}
+
+.attraction-header {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  padding: 3rem 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.attraction-badge-large {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.attraction-badge-large.badge-5a {
+  background: rgba(255, 193, 7, 0.9);
+}
+
+.attraction-badge-large.badge-4a {
+  background: rgba(23, 162, 184, 0.9);
+}
+
+.attraction-badge-large.badge-3a {
+  background: rgba(108, 117, 125, 0.9);
+}
+
+.attraction-badge-large.badge-museum {
+  background: rgba(102, 126, 234, 0.9);
+}
+
+.attraction-title {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.attraction-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.attraction-meta {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.city-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+}
+
+.type-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+}
+
+.share-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.share-section h2 {
+  color: #28a745;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  border-bottom: 3px solid #28a745;
+  padding-bottom: 0.5rem;
+}
+
+.share-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.share-section .share-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+  color: white;
+}
+
+.share-section .share-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.share-section .share-btn.xiaohongshu {
+  background: linear-gradient(135deg, #ff2442 0%, #ff6b6b 100%);
+}
+
+.share-section .share-btn.wechat {
+  background: linear-gradient(135deg, #07c160 0%, #2aae67 100%);
+}
+
+.share-section .share-btn.write-journal {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.attraction-intro-section,
+.price-section,
+.attraction-info-section,
+.tips-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.attraction-intro-section h2,
+.price-section h2,
+.attraction-info-section h2,
+.tips-section h2 {
+  color: #28a745;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  border-bottom: 3px solid #28a745;
+  padding-bottom: 0.5rem;
+}
+
+.attraction-intro-section p {
+  color: #666;
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+
+.price-card {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+}
+
+.price-status {
+  margin-bottom: 1.5rem;
+}
+
+.free-badge,
+.paid-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.free-badge {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+}
+
+.paid-badge {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  color: white;
+}
+
+.free-icon,
+.paid-icon {
+  font-size: 1.5rem;
+}
+
+.price-info {
+  margin-top: 1.5rem;
+}
+
+.price-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.price-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.price-value {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 1.3rem;
+}
+
+.price-detail {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.price-detail h3 {
+  color: #333;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.price-detail p {
+  color: #666;
+  line-height: 1.6;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
+}
+
+.info-label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.info-value {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.tips-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tips-list li {
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+  color: #856404;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .attraction-title {
+    font-size: 2rem;
+  }
+  
+  .attraction-subtitle {
+    font-size: 1rem;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}

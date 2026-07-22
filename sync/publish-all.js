@@ -1,54 +1,133 @@
 #!/usr/bin/env node
 /**
- * 一键：校验文章 → 导出/同步飞书、微信、小红书。
- * GitHub Pages 仍由 git push + Actions 负责；本脚本专注多平台内容同步。
- *
- * 用法: node sync/publish-all.js <slug>
+ * 一键发布到多平台（作者本机）。
+ * 用法:
+ *   node sync/publish-all.js <slug> [--to wechat,xhs,csdn,zhihu,feishu] [--dry-run]
+ *   node sync/publish-all.js --batch --tag 旅行 --to xhs,wechat
  */
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadEnv, readPost } from "./lib/posts.js";
+import {
+  loadEnv,
+  readPost,
+  listPosts,
+  assertCanPublish,
+  allowedPlatforms,
+  appendLog,
+} from "./lib/posts.js";
 
 loadEnv();
 
-const slug = process.argv[2];
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const args = process.argv.slice(2);
+const dryRun = args.includes("--dry-run");
+const batch = args.includes("--batch");
+
+function getFlag(name) {
+  const i = args.indexOf(name);
+  if (i < 0) return null;
+  return args[i + 1] || null;
+}
+
+const toRaw = getFlag("--to");
+const tagFilter = getFlag("--tag");
+
+const PLATFORM_SCRIPTS = {
+  feishu: "sync/feishu.js",
+  wechat: "sync/wechat.js",
+  xhs: "sync/xiaohongshu.js",
+  csdn: "sync/csdn.js",
+  zhihu: "sync/zhihu.js",
+};
+
+function pickPlatforms(post) {
+  const allowed = allowedPlatforms(post);
+  const requested = toRaw
+    ? toRaw.split(/[,，\s]+/).map(s => s.trim()).filter(Boolean)
+    : allowed;
+  return requested.filter(p => {
+    if (!PLATFORM_SCRIPTS[p]) {
+      console.warn(`未知平台: ${p}`);
+      return false;
+    }
+    if (!allowed.includes(p) && allowed.length) {
+      console.warn(`文章未授权平台 ${p}（frontmatter.platforms）`);
+      return false;
+    }
+    return true;
+  });
+}
+
+function publishOne(slug) {
+  const post = readPost(slug);
+  console.log(`\n######## ${post.frontmatter.title || post.slug} ########`);
+  console.log(`文件: ${post.rel}`);
+
+  try {
+    assertCanPublish(post);
+  } catch (e) {
+    console.error(String(e.message || e));
+    appendLog(`DENY ${post.rel}: ${e.message}`);
+    return 1;
+  }
+
+  const platforms = pickPlatforms(post);
+  if (!platforms.length) {
+    console.error("没有可发布的平台");
+    return 1;
+  }
+
+  if (dryRun) {
+    console.log(`[dry-run] 将发布到: ${platforms.join(", ")}`);
+    appendLog(`DRY-RUN ${post.rel} -> ${platforms.join(",")}`);
+    return 0;
+  }
+
+  let failed = 0;
+  for (const p of platforms) {
+    const name = p;
+    const rel = PLATFORM_SCRIPTS[p];
+    console.log(`\n======== ${name} ========`);
+    const r = spawnSync(process.execPath, [path.join(root, rel), post.slug], {
+      encoding: "utf8",
+      cwd: root,
+      stdio: "inherit",
+    });
+    if (r.status !== 0) {
+      failed += 1;
+      appendLog(`FAIL ${post.rel} ${name} exit=${r.status}`);
+    } else {
+      appendLog(`OK ${post.rel} ${name}`);
+    }
+  }
+  return failed > 0 ? 1 : 0;
+}
+
+if (batch) {
+  let posts = listPosts().filter(p => !p.isPrivatePath);
+  if (tagFilter) {
+    posts = posts.filter(p => {
+      const tags = p.frontmatter.tags || [];
+      return Array.isArray(tags) && tags.map(String).includes(tagFilter);
+    });
+  }
+  // Prefer posts with publishable frontmatter title
+  posts = posts.filter(p => p.frontmatter.title || p.rel.includes("blog/posts/"));
+  console.log(`批量候选 ${posts.length} 篇${tagFilter ? `（tag=${tagFilter}）` : ""}`);
+  let code = 0;
+  for (const p of posts) {
+    code |= publishOne(p.filePath);
+  }
+  process.exit(code);
+}
+
+const slug = args.find(a => !a.startsWith("--") && a !== toRaw && a !== tagFilter);
 if (!slug) {
-  console.error("用法: npm run publish:all -- <文章slug>");
+  console.error(`用法:
+  node sync/publish-all.js <slug> [--to wechat,xhs,csdn,zhihu] [--dry-run]
+  node sync/publish-all.js --batch [--tag 旅行] [--to xhs,wechat] [--dry-run]`);
   process.exit(1);
 }
 
-const post = readPost(slug);
-console.log(`准备发布: ${post.frontmatter.title || post.slug}`);
-console.log(`文件: ${post.filePath}\n`);
-
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const scripts = [
-  ["飞书", "sync/feishu.js"],
-  ["微信公众号", "sync/wechat.js"],
-  ["小红书", "sync/xiaohongshu.js"],
-];
-
-let failed = 0;
-for (const [name, rel] of scripts) {
-  console.log(`\n======== ${name} ========`);
-  const r = spawnSync(process.execPath, [path.join(root, rel), slug], {
-    encoding: "utf8",
-    cwd: root,
-    stdio: "inherit",
-  });
-  if (r.status !== 0) {
-    console.error(`${name} 同步未完全成功 (exit ${r.status})`);
-    failed += 1;
-  }
-}
-
-console.log(`
-======== 博客站点 ========
-本地预览: npm run dev
-构建检查: npm run build
-部署上线: git add/commit/push → GitHub Actions 自动发布
-站点地址: https://duniang818.github.io/
-`);
-
-process.exit(failed > 0 ? 1 : 0);
+process.exit(publishOne(slug));

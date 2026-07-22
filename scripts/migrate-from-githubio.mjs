@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const LEGACY = "D:/githubio/legacy/src/data";
+const LEGACY = path.join(ROOT, "legacy-data");
 const DOCS = path.join(ROOT, "docs");
 
 function loadExport(file, exportName) {

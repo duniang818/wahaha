@@ -1,0 +1,268 @@
+.university-detail-page {
+  padding: 2rem 0;
+  min-height: calc(100vh - 200px);
+}
+
+.back-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  transition: opacity 0.3s;
+}
+
+.back-btn:hover {
+  opacity: 0.8;
+}
+
+.university-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 3rem 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.university-rank-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.university-title {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.university-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 1rem;
+}
+
+.university-meta {
+  margin-top: 1rem;
+}
+
+.country-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+}
+
+.university-intro-section,
+.majors-section,
+.alumni-section,
+.admission-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.university-intro-section h2,
+.majors-section h2,
+.alumni-section h2,
+.admission-section h2 {
+  color: #667eea;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 0.5rem;
+}
+
+.university-intro-section p {
+  color: #666;
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+
+.majors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.major-card {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+  transition: transform 0.3s;
+}
+
+.major-card:hover {
+  transform: translateX(5px);
+}
+
+.top-major {
+  border-left-color: #28a745;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e9 100%);
+}
+
+.bottom-major {
+  border-left-color: #6c757d;
+}
+
+.major-rank {
+  display: inline-block;
+  background: #28a745;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.major-card h3 {
+  color: #333;
+  margin-bottom: 0.75rem;
+  font-size: 1.2rem;
+}
+
+.teacher-info {
+  color: #666;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.teacher-desc {
+  color: #888;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.alumni-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.alumni-card {
+  background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s;
+}
+
+.alumni-card:hover {
+  border-color: #667eea;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.alumni-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #667eea;
+  margin-bottom: 0.75rem;
+}
+
+.alumni-achievement {
+  color: #666;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.admission-card {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #667eea;
+}
+
+.admission-card h3 {
+  color: #667eea;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.threshold-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.entry-ways,
+.exam-subjects,
+.exam-dates {
+  list-style: none;
+  padding-left: 0;
+}
+
+.entry-ways li,
+.exam-subjects li,
+.exam-dates li {
+  padding: 0.75rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  color: #666;
+  line-height: 1.6;
+}
+
+.entry-ways li::before,
+.exam-subjects li::before,
+.exam-dates li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: bold;
+}
+
+.admission-tips {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+  margin-top: 1.5rem;
+}
+
+.admission-tips h3 {
+  color: #856404;
+  margin-bottom: 0.75rem;
+}
+
+.admission-tips p {
+  color: #856404;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .university-title {
+    font-size: 1.8rem;
+  }
+  
+  .university-subtitle {
+    font-size: 1rem;
+  }
+  
+  .majors-grid,
+  .alumni-grid {
+    grid-template-columns: 1fr;
+  }
+}

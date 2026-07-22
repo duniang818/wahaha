@@ -1,0 +1,282 @@
+.route-map-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  width: 100%;
+  min-width: 400px;
+}
+
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #eee;
+}
+
+.map-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.map-legend {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #667eea;
+  display: inline-block;
+}
+
+.legend-line {
+  width: 30px;
+  height: 3px;
+  background: #667eea;
+  display: inline-block;
+}
+
+.legend-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: white;
+  margin-right: 4px;
+}
+.legend-badge.badge-5a { background: #e53935; }
+.legend-badge.badge-4a { background: #1976d2; }
+.legend-badge.badge-3a { background: #43a047; }
+.legend-badge.badge-museum { background: #7b1fa2; }
+.legend-badge.badge-uni { background: #f57c00; }
+.legend-badge.badge-acc { background: #00838f; }
+
+.route-map-canvas {
+  width: 100%;
+  height: 600px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  background: #fafafa;
+  display: block;
+  min-width: 350px;
+}
+
+.map-placeholder {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #999;
+  font-size: 1.1rem;
+}
+
+.map-info {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.map-info p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* 高德地图容器 */
+.route-map-amap {
+  background: #f0f2f5;
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 300px;
+}
+
+.route-map-amap.empty,
+.route-map-amap.no-key,
+.route-map-amap.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #666;
+  text-align: center;
+}
+
+.route-map-amap.no-key code {
+  display: block;
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background: #f5f5f5;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.route-map-amap.no-key .hint {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.route-map-amap.no-key a {
+  color: #667eea;
+}
+
+/* 快速路线规划区域 */
+.quick-route-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.quick-route-section h2 {
+  color: white;
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+}
+
+.quick-route-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.quick-route-field label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.95;
+}
+
+.quick-route-field select,
+.quick-route-field input {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.quick-route-with-swap {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.quick-route-with-swap select,
+.quick-route-with-swap input {
+  flex: 1;
+}
+
+.swap-cities-btn {
+  padding: 0 1rem;
+  background: rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 8px;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.swap-cities-btn:hover {
+  background: rgba(255,255,255,0.5);
+}
+
+.quick-route-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.quick-route-result {
+  background: rgba(255,255,255,0.15);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.quick-route-result .result-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.quick-route-result .result-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.book-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.book-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: white;
+  color: #667eea;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.book-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.book-link.train {
+  background: #e53935;
+  color: white;
+}
+
+.book-link.plane {
+  background: #1976d2;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .route-map-canvas {
+    height: 400px;
+  }
+
+  .map-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .map-legend {
+    flex-wrap: wrap;
+  }
+
+  .quick-route-grid {
+    grid-template-columns: 1fr;
+  }
+}
