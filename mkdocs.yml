@@ -87,8 +87,10 @@ extra:
       link: https://github.com/duniang818
     - icon: fontawesome/brands/weixin
       link: https://duniang818.github.io/wahaha/about/
+    - icon: fontawesome/brands/blogger
+      link: https://blog.csdn.net/zhuce_2012?spm=1000.2115.3001.10640
     - icon: fontawesome/brands/zhihu
-      link: https://duniang818.github.io/wahaha/about/
+      link: https://www.zhihu.com/people/duniang818/posts
 
 nav:
   - 首页: index.md

@@ -20,8 +20,8 @@
   <a href="https://github.com/duniang818">GitHub</a>
   <a href="#">微信公众号</a>
   <a href="#">小红书</a>
-  <a href="#">CSDN</a>
-  <a href="#">知乎</a>
+  <a href="https://blog.csdn.net/zhuce_2012?spm=1000.2115.3001.10640">CSDN</a>
+  <a href="https://www.zhihu.com/people/duniang818/posts">知乎</a>
 </div>
 
 > 将上面 `#` 换成你的主页链接即可。二维码可放在 `docs/assets/social/`。
