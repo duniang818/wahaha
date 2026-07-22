@@ -2,7 +2,7 @@
 
 个人知识库与博客：**教育 · 旅行 · 技术 · 生活**。
 
-线上入口：[https://duniang818.github.io/](https://duniang818.github.io/)  
+线上入口：[https://duniang818.github.io/wahaha/](https://duniang818.github.io/wahaha/)  
 本地工程：`D:\\my-blog`（`mkdocs serve` 预览）
 
 ## 内容分区
@@ -16,4 +16,4 @@
 
 ## 最近想法
 
-在 `docs/blog/posts/` 写新文章，或直接改各分区 Markdown。推送到 GitHub 后自动发布到根域名。
+在 `docs/blog/posts/` 写新文章，或直接改各分区 Markdown。推送到 GitHub 后自动发布上线。

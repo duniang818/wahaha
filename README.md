@@ -1,7 +1,8 @@
 # 渡娘的空间
 
 本地唯一工程目录：`D:\my-blog`  
-线上唯一入口：https://duniang818.github.io/
+线上入口：https://duniang818.github.io/wahaha/  
+仓库：https://github.com/duniang818/wahaha
 
 ## 本地预览
 
@@ -35,10 +36,7 @@ git commit -m "docs: update"
 git push origin main
 ```
 
-GitHub Actions 自动构建并发布到用户站根域名。  
+GitHub Actions 自动构建并发布。  
 仓库 Settings → Pages → Source 选 **GitHub Actions**。
 
-## 与旧目录关系
-
-- `D:\githubio\legacy`：原始 React 数据源（可归档，不必再部署）
-- `D:\githubio\portal`：曾作临时入口；现由本站首页取代
+> 说明：仓库当前名为 `wahaha`，因此站点路径为 `/wahaha/`。若改回仓库名 `duniang818.github.io`，可把 `site_url` 改回根域名后再推送。
