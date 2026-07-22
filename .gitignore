@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 .DS_Store
 sync/out/
+sync/assistant-defaults.json
 .env
 .env.local
 legacy-data/

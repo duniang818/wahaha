@@ -102,6 +102,7 @@ nav:
       - tech/index.md
       - Giscus 评论配置: tech/giscus-setup.md
       - 飞书一键发布: tech/feishu-publish.md
+      - 终端博客助手: tech/blog-assistant.md
       - 工具:
           - tools/tools-index.md
           - 搭建博客: tools/如何利用Mkdocs+Material+GithubPages搭建个人博客.md

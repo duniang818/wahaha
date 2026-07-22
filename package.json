@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "blog": "node scripts/blog-assistant.mjs",
+    "assistant": "node scripts/blog-assistant.mjs",
     "dev": "mkdocs serve -a 127.0.0.1:8000",
     "build": "mkdocs build",
     "sync:wechat": "node sync/wechat.js",

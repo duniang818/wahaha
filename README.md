@@ -12,7 +12,18 @@ npm run dev
 # http://127.0.0.1:8000/
 ```
 
-## 飞书写作 → 一键上博客（推荐）
+## 博客助手（推荐）
+
+一条命令打开菜单，按提示选择即可：
+
+```powershell
+cd D:\my-blog
+npm run blog
+```
+
+可做：本地预览、飞书→博客、发外站、批量发布、构建、git 推送、改默认参数。
+
+## 飞书写作 → 一键上博客
 
 ```powershell
 lark-cli auth login
