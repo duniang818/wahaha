@@ -4,6 +4,8 @@ author: 渡娘
 date: 2026-07-22
 visibility: public
 draft: false
+feishu_doc: NvC5dYXOco8X28xnCbScFQXnnng
+feishu_url: https://my.feishu.cn/docx/NvC5dYXOco8X28xnCbScFQXnnng
 tags:
   - 飞博虾
   - 飞书
