@@ -1,0 +1,68 @@
+﻿site_name: 我的空间
+site_url: https://duniang818.github.io/superset-fork/
+repo_url: https://github.com/duniang818/superset-fork
+repo_name: superset-fork
+edit_uri: edit/private/docs/
+site_description: duniang818 的个人博客（MkDocs Material）
+
+theme:
+  name: material
+  language: zh
+  features:
+    - toc.follow
+    - navigation.instant
+    - navigation.top
+    - navigation.tabs
+    - navigation.sections
+    - navigation.path
+    - navigation.indexes
+    - navigation.expand
+    - navigation.footer
+    - content.code.annotate
+    - search.suggest
+    - search.highlight
+
+docs_dir: docs
+not_in_nav: |
+  /private/**/*.md
+
+plugins:
+  - search
+  - blog:
+      blog_dir: blog/posts
+
+markdown_extensions:
+  - meta
+  - toc:
+      permalink: true
+  - attr_list
+  - def_list
+  - tables
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+nav:
+  - 首页: index.md
+  - 工具:
+      - tools/tools-index.md
+      - mkdocs:
+          - 搭建: tools/如何利用Mkdocs+Material+GithubPages搭建个人博客.md
+          - 配置: tools/配置mkdocs.md
+      - obsidian: tools/obsidian.md
+  - 分析:
+      - analysis/analysis-index.md
+      - 安装部署: analysis/0 Xset 4.0.0在Windows上源码部署.md
+  - 汽车: car/car-index.md
+  - 生活: life/life-index.md
+  - 博客: blog/blog-index.md
+  - GitFork: gitfork/gitfork-index.md
+  - Todo: todos/todos-index.md
