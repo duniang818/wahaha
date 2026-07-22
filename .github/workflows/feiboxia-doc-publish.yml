@@ -1,0 +1,61 @@
+name: 飞博虾·文档发布
+
+# 文档内「飞博虾」小组件通过 repository_dispatch 触发
+# 1) 写入飞书博客台账  2) 尽量拉取正文写入 docs/
+
+on:
+  repository_dispatch:
+    types: [feiboxia-doc-publish]
+  workflow_dispatch:
+    inputs:
+      payload_json:
+        description: "client_payload JSON"
+        required: false
+        default: "{}"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-from-doc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Prepare payload
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo '${{ toJson(github.event.client_payload) }}' > /tmp/payload.json
+          else
+            echo '${{ inputs.payload_json }}' > /tmp/payload.json
+          fi
+          cp /tmp/payload.json feiboxia/queue/doc-dispatch.json
+          cat feiboxia/queue/doc-dispatch.json
+
+      - name: Install lark-cli (optional user path)
+        continue-on-error: true
+        run: npm i -g @larksuite/cli
+
+      - name: Run feiboxia doc publish
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          CLIENT_PAYLOAD: ${{ github.event_name == 'repository_dispatch' && toJson(github.event.client_payload) || inputs.payload_json }}
+        run: node feiboxia/ci-doc-publish.mjs
+
+      - name: Commit docs if changed
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No doc file changes"
+            exit 0
+          fi
+          git config user.name "feiboxia-bot"
+          git config user.email "feiboxia@users.noreply.github.com"
+          git add docs feiboxia/queue
+          git commit -m "docs: 飞博虾文档内发布"
+          git push

@@ -1,0 +1,18 @@
+{
+  "manifestVersion": 1,
+  "appID": "cli_aaac9ff9eae4dbfc",
+  "appType": "docs-addon",
+  "blockTypeID": "blk_6a2623e44bdc0bf3ee272366",
+  "projectName": "飞博虾",
+  "contributes": {
+    "addPanel": {
+      "initialHeight": 640,
+      "view": "index.html",
+      "useHostLoading": true,
+      "useInteraction": true
+    },
+    "popup": {
+      "view": "index.html"
+    }
+  }
+}

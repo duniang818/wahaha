@@ -98,6 +98,8 @@ export function buildPostMarkdown({
   docId = "",
   docUrl = "",
   navDir = "blog/posts",
+  platforms = ["blog", "wechat", "xhs", "csdn", "zhihu"],
+  draft = false,
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const tagList = (Array.isArray(tags) ? tags : String(tags).split(/[,，]/))
@@ -105,20 +107,22 @@ export function buildPostMarkdown({
     .filter(Boolean);
   if (!tagList.length) tagList.push("飞博虾");
 
+  const plats = (Array.isArray(platforms) ? platforms : String(platforms).split(","))
+    .map(s => String(s).trim())
+    .filter(Boolean)
+    .filter(p => p !== "blog"); // frontmatter 外站列表；blog 由文件存在表示
+
   const front = [
     "---",
     `title: ${yamlEscape(title)}`,
     "author: 渡娘",
     `date: ${today}`,
-    "visibility: public",
-    "draft: false",
+    `visibility: ${draft ? "private" : "public"}`,
+    `draft: ${draft ? "true" : "false"}`,
     `feishu_doc: ${docId}`,
     `feishu_url: ${docUrl}`,
     "platforms:",
-    "  - wechat",
-    "  - xhs",
-    "  - csdn",
-    "  - zhihu",
+    ...(plats.length ? plats.map(t => `  - ${t}`) : ["  - none"]),
     "tags:",
     ...tagList.map(t => `  - ${t}`),
     "description: 由飞博虾一键发布",
