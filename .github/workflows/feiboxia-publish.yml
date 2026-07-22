@@ -1,0 +1,44 @@
+name: 飞博虾发布台
+
+# 无自有公网：应用 feiboxia/queue 中的稿件到 docs/
+# 触发：workflow_dispatch（工作台可点）或 push 队列文件
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+    paths:
+      - "feiboxia/queue/*.md"
+      - "feiboxia/queue/*.json"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: feiboxia-publish
+  cancel-in-progress: false
+
+jobs:
+  apply-queue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Apply feiboxia queue → docs
+        run: node feiboxia/queue-apply.mjs
+
+      - name: Commit published docs
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "feiboxia-bot"
+          git config user.email "feiboxia@users.noreply.github.com"
+          git add docs feiboxia/queue
+          git commit -m "docs: 飞博虾队列发布"
+          git push

@@ -65,7 +65,9 @@ const args = [
   "v2",
   "--as",
   "user",
-  "--markdown",
+  "--doc-format",
+  "markdown",
+  "--content",
   `@${mdFile}`,
 ];
 

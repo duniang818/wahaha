@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>飞博虾 · 工作台与发布台</title>
+  <style>
+    :root {
+      --bg0: #071612;
+      --bg1: #0d241c;
+      --panel: #122c24;
+      --line: #2a4f42;
+      --ink: #e7f6ef;
+      --muted: #8fb8a8;
+      --accent: #3dd68c;
+      --accent2: #ff7a59;
+      --warn: #f0c14a;
+      --radius: 18px;
+      --font: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      color: var(--ink);
+      background:
+        radial-gradient(900px 520px at 8% -8%, #1a4a38 0%, transparent 55%),
+        radial-gradient(700px 420px at 100% 0%, #4a2c1c 0%, transparent 48%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+    }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 40px 20px 96px; }
+    .brand {
+      display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+      animation: rise .7s ease both;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(2.4rem, 7vw, 3.6rem);
+      letter-spacing: .06em;
+      font-weight: 800;
+    }
+    .brand h1 i { font-style: normal; color: var(--accent2); }
+    .tag {
+      font-size: .78rem; color: var(--muted);
+      border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px;
+    }
+    .lead {
+      margin: 14px 0 28px; max-width: 40rem;
+      color: var(--muted); line-height: 1.7;
+      animation: rise .7s .08s ease both;
+    }
+    .tabs {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 18px;
+      animation: rise .7s .12s ease both;
+    }
+    .tabs button {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: .95rem;
+    }
+    .tabs button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #062016;
+      font-weight: 700;
+    }
+    .panel {
+      display: none;
+      background: color-mix(in srgb, var(--panel) 92%, black);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px;
+      animation: rise .45s ease both;
+    }
+    .panel.active { display: block; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      background: #0c1f19;
+      text-decoration: none;
+      color: inherit;
+      transition: transform .2s ease, border-color .2s;
+    }
+    .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+    .card p { margin: 0; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+    .kicker { color: var(--accent2); font-size: .75rem; letter-spacing: .08em; }
+    label { display: block; margin: 12px 0 6px; color: var(--muted); font-size: .85rem; }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #071410;
+      color: var(--ink);
+      font: inherit;
+    }
+    .btnrow { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    button.cta, a.cta {
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 0; border-radius: 999px; padding: 11px 18px;
+      font-weight: 700; font-size: .95rem; cursor: pointer;
+      text-decoration: none; color: #062016;
+      background: linear-gradient(90deg, var(--accent), #2bb673);
+    }
+    button.ghost, a.ghost {
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px;
+      background: transparent; color: var(--ink); cursor: pointer;
+      text-decoration: none; font-size: .92rem;
+    }
+    .hint {
+      margin-top: 14px; padding: 12px 14px; border-radius: 12px;
+      background: #10261f; color: var(--muted); font-size: .88rem; line-height: 1.55;
+      border-left: 3px solid var(--warn);
+    }
+    .mono { font-family: ui-monospace, Consolas, monospace; font-size: .82rem; word-break: break-all; }
+    .ok { color: var(--accent); }
+    .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+    .steps li {
+      counter-increment: s; position: relative;
+      padding: 0 0 14px 36px; color: var(--muted); line-height: 1.55;
+    }
+    .steps li::before {
+      content: counter(s);
+      position: absolute; left: 0; top: 0;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--accent2); color: #fff;
+      display: grid; place-items: center;
+      font-size: .78rem; font-weight: 700;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <h1>飞博<i>虾</i></h1>
+      <span class="tag">工作台 · 发布台</span>
+    </div>
+    <p class="lead">在飞书写随笔、预览，再一键发到 GitHub 博客。无需自有公网——写作用飞书，托管用 GitHub。</p>
+
+    <div class="tabs" id="tabs">
+      <button type="button" data-tab="write" class="active">写作台</button>
+      <button type="button" data-tab="box">稿件箱</button>
+      <button type="button" data-tab="publish">发布台</button>
+      <button type="button" data-tab="settings">设置</button>
+    </div>
+
+    <section class="panel active" id="tab-write">
+      <p class="kicker">WRITE</p>
+      <h2 style="margin:4px 0 14px">在飞书里写，就是最好的编辑与预览</h2>
+      <div class="grid">
+        <a class="card" id="link-base" href="#" target="_blank" rel="noreferrer">
+          <span class="kicker">台账</span>
+          <h3>打开飞博虾台账</h3>
+          <p>登记文档链接、栏目、定时与状态。</p>
+        </a>
+        <a class="card" href="https://www.feishu.cn/product/docs" target="_blank" rel="noreferrer">
+          <span class="kicker">云文档</span>
+          <h3>新建一篇飞书文档</h3>
+          <p>随笔直接写在 Docx 里，所见即所得。</p>
+        </a>
+        <a class="card" href="../blog/posts/" target="_blank" rel="noreferrer">
+          <span class="kicker">博客</span>
+          <h3>查看已发布文章</h3>
+          <p>GitHub Pages 上的公开内容。</p>
+        </a>
+      </div>
+      <div class="hint" style="margin-top:18px">
+        <ol class="steps">
+          <li>飞书云文档写好标题与正文</li>
+          <li>台账新增一行：粘贴文档链接，选「导航栏目」</li>
+          <li>状态选「待发博客」，或「一键操作」选「立即发布」</li>
+          <li>到「发布台」执行发布（本机或 GitHub Actions）</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-box">
+      <p class="kicker">INBOX</p>
+      <h2 style="margin:4px 0 14px">稿件箱在飞书台账里</h2>
+      <p style="color:var(--muted);line-height:1.6;margin:0 0 14px">
+        草稿 / 待发 / 已发 / 失败，全部用台账字段管理。这里不重复造列表——飞书表格本身就是稿件箱。
+      </p>
+      <div class="btnrow">
+        <a class="cta" id="link-base-2" href="#" target="_blank" rel="noreferrer">打开稿件台账</a>
+        <a class="ghost" href="https://my.feishu.cn/drive/home/" target="_blank" rel="noreferrer">我的飞书云空间</a>
+      </div>
+      <div class="hint">建议视图：按「状态」分组；待发视图只显示「待发博客」。</div>
+    </section>
+
+    <section class="panel" id="tab-publish">
+      <p class="kicker">PUBLISH</p>
+      <h2 style="margin:4px 0 8px">发布台（无自有公网）</h2>
+      <p style="color:var(--muted);line-height:1.6;margin:0 0 16px">
+        飞书云端点不到你家电脑。发布有两条路，都借用 GitHub：
+      </p>
+      <div class="grid">
+        <div class="card">
+          <span class="kicker">推荐 · 本机</span>
+          <h3>本机发布台</h3>
+          <p class="mono" style="margin-top:8px">npm run feiboxia:ship</p>
+          <p style="margin-top:8px">拉飞书待发稿 → 写入 docs → push → Pages 自动部署。</p>
+        </div>
+        <div class="card">
+          <span class="kicker">备用 · GitHub</span>
+          <h3>Actions 应用队列</h3>
+          <p style="margin-top:8px">本机先打包队列并 push，GitHub Actions 自动落到博客目录。</p>
+        </div>
+      </div>
+      <div class="btnrow">
+        <button type="button" class="cta" id="btn-dispatch">用 GitHub 触发发布工作流</button>
+        <a class="ghost" id="link-actions" href="#" target="_blank" rel="noreferrer">打开 Actions 页面</a>
+        <a class="ghost" href="../" target="_blank" rel="noreferrer">打开博客首页</a>
+      </div>
+      <p id="publish-msg" class="mono" style="margin-top:12px;color:var(--muted)"></p>
+      <div class="hint">
+        「用 GitHub 触发」需要你在「设置」里保存 <b>repo</b> 与 <b>PAT</b>（workflow 权限）。Token 只存在本浏览器，不经过自建服务器。
+      </div>
+    </section>
+
+    <section class="panel" id="tab-settings">
+      <p class="kicker">SETTINGS</p>
+      <h2 style="margin:4px 0 8px">一次配置，长期省事</h2>
+      <label>飞书台账 URL</label>
+      <input id="cfg-base" placeholder="https://my.feishu.cn/base/..." />
+      <label>GitHub 仓库 owner/repo</label>
+      <input id="cfg-repo" placeholder="duniang818/wahaha" />
+      <label>GitHub PAT（可选，用于浏览器触发 Actions）</label>
+      <input id="cfg-pat" type="password" placeholder="ghp_... 需 workflow 权限" autocomplete="off" />
+      <label>博客站点根 URL</label>
+      <input id="cfg-site" placeholder="https://duniang818.github.io/wahaha/" />
+      <div class="btnrow">
+        <button type="button" class="cta" id="btn-save">保存到本浏览器</button>
+        <button type="button" class="ghost" id="btn-fill-default">填入渡娘默认</button>
+      </div>
+      <p id="save-msg" class="mono" style="margin-top:12px;color:var(--muted)"></p>
+      <div class="hint">
+        飞书开放平台应用可作为「工作台」入口：主页填<br>
+        <span class="mono" id="home-url"></span>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const KEY = "feiboxia_workbench_v1";
+    const defaults = {
+      baseUrl: "https://my.feishu.cn/base/ADtHbOF0raWJj0stRApcfjjInLg",
+      repo: "duniang818/wahaha",
+      pat: "",
+      siteUrl: "https://duniang818.github.io/wahaha/",
+    };
+
+    function load() {
+      try { return { ...defaults, ...JSON.parse(localStorage.getItem(KEY) || "{}") }; }
+      catch { return { ...defaults }; }
+    }
+    function save(cfg) {
+      localStorage.setItem(KEY, JSON.stringify(cfg));
+    }
+    function applyLinks(cfg) {
+      document.getElementById("link-base").href = cfg.baseUrl || "#";
+      document.getElementById("link-base-2").href = cfg.baseUrl || "#";
+      document.getElementById("link-actions").href =
+        `https://github.com/${cfg.repo}/actions/workflows/feiboxia-publish.yml`;
+      document.getElementById("home-url").textContent =
+        (cfg.siteUrl || defaults.siteUrl).replace(/\/?$/, "/") + "feiboxia/workbench.html";
+      document.getElementById("cfg-base").value = cfg.baseUrl || "";
+      document.getElementById("cfg-repo").value = cfg.repo || "";
+      document.getElementById("cfg-pat").value = cfg.pat || "";
+      document.getElementById("cfg-site").value = cfg.siteUrl || "";
+    }
+
+    const cfg = load();
+    applyLinks(cfg);
+
+    document.getElementById("tabs").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-tab]");
+      if (!btn) return;
+      document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b === btn));
+      document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "tab-" + btn.dataset.tab));
+    });
+
+    document.getElementById("btn-fill-default").onclick = () => {
+      applyLinks(defaults);
+      document.getElementById("save-msg").textContent = "已填入默认值，请点保存。";
+    };
+
+    document.getElementById("btn-save").onclick = () => {
+      const next = {
+        baseUrl: document.getElementById("cfg-base").value.trim(),
+        repo: document.getElementById("cfg-repo").value.trim(),
+        pat: document.getElementById("cfg-pat").value.trim(),
+        siteUrl: document.getElementById("cfg-site").value.trim(),
+      };
+      save(next);
+      applyLinks(next);
+      document.getElementById("save-msg").innerHTML = '<span class="ok">✓ 已保存到本浏览器</span>';
+    };
+
+    document.getElementById("btn-dispatch").onclick = async () => {
+      const c = load();
+      const msg = document.getElementById("publish-msg");
+      if (!c.repo || !c.pat) {
+        msg.textContent = "请先在「设置」填写仓库与 PAT，或改用本机命令：npm run feiboxia:ship";
+        return;
+      }
+      msg.textContent = "正在触发 GitHub Actions…";
+      try {
+        const res = await fetch(
+          `https://api.github.com/repos/${c.repo}/actions/workflows/feiboxia-publish.yml/dispatches`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/vnd.github+json",
+              Authorization: `Bearer ${c.pat}`,
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+            body: JSON.stringify({ ref: "main" }),
+          }
+        );
+        if (res.status === 204) {
+          msg.innerHTML = '<span class="ok">✓ 已触发</span>，请到 Actions 查看运行结果。';
+        } else {
+          const t = await res.text();
+          msg.textContent = `失败 ${res.status}: ${t.slice(0, 240)}`;
+        }
+      } catch (err) {
+        msg.textContent = "失败：" + err.message;
+      }
+    };
+  </script>
+</body>
+</html>

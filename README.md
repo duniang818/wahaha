@@ -3,6 +3,21 @@
 本地：`D:\my-blog`  
 线上：https://duniang818.github.io/wahaha/
 
+## 飞博虾（推荐）
+
+飞书写文章 → 台账登记 → 本机一键发到 GitHub 博客（**无需自有公网**）。
+
+```powershell
+cd D:\my-blog
+npm run feiboxia:ship         # 发布台：拉飞书待发稿 → docs → push
+npm run blog                  # 终端菜单
+```
+
+工作台：https://duniang818.github.io/wahaha/feiboxia/workbench.html  
+台账：https://my.feishu.cn/base/ADtHbOF0raWJj0stRApcfjjInLg  
+
+说明：[飞博虾](docs/tech/feiboxia.md)
+
 ## 本地预览
 
 ```powershell
@@ -12,38 +27,32 @@ npm run dev
 # http://127.0.0.1:8000/
 ```
 
-## 博客助手（推荐）
+## 飞书写作 → 一键上博客（命令行）
 
-一条命令打开菜单，按提示选择即可：
+首次（只需一次）：
 
 ```powershell
-cd D:\my-blog
-npm run blog
+lark-cli config init --new --lang zh
+lark-cli auth login --domain docs
+lark-cli auth login --domain base
+npm run feishu:check
 ```
 
-可做：本地预览、飞书→博客、发外站、批量发布、构建、git 推送、改默认参数。
-
-## 飞书写作 → 一键上博客
+日常：
 
 ```powershell
-lark-cli auth login
 npm run from-feishu -- "https://xxx.feishu.cn/docx/TOKEN" --push
-# 同时发微信/小红书等：
-npm run from-feishu -- "URL" --push --also wechat,xhs,csdn,zhihu
 ```
 
-详见 [飞书一键发布](docs/tech/feishu-publish.md)。
-
-## 作者一键发布（仅本机 L1）
+## 外站导出（仅本机）
 
 ```powershell
-copy .env.example .env   # 填微信等凭证
-npm run desk             # 打开发布台说明页
-npm run publish:one -- welcome --to wechat,xhs,csdn,zhihu --dry-run
-npm run publish:batch -- --tag 旅行 --to xhs --dry-run
+copy .env.example .env   # 微信需填 AppID/Secret；其它平台多为导出
+npm run publish:one -- welcome --to xhs,csdn,zhihu
 ```
 
-权限：`docs/private/` 与 `visibility: private` 禁止外发；访客只能浏览公开站并评论。
+小红书/CSDN/知乎：官方无完整发文 API，脚本导出到 `sync/out/` 并打开编辑页。  
+权限：`docs/private/` 与 `visibility: private` 禁止外发。
 
 ## 推送上线
 

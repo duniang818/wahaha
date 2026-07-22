@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>飞博虾 · 一键绑定</title>
+  <style>
+    :root {
+      --bg: #0f1f1a;
+      --card: #163028;
+      --ink: #e8f5ef;
+      --muted: #8fb3a4;
+      --accent: #3ecf8e;
+      --accent2: #ff6b4a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 500px at 10% -10%, #1d4d3c 0%, transparent 55%),
+        radial-gradient(700px 400px at 100% 0%, #3a2a18 0%, transparent 50%),
+        var(--bg);
+    }
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+    .brand {
+      font-size: clamp(2.4rem, 8vw, 3.4rem);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      margin: 0 0 8px;
+    }
+    .brand span { color: var(--accent2); }
+    .lead { color: var(--muted); margin: 0 0 28px; line-height: 1.6; }
+    form, .panel {
+      background: color-mix(in srgb, var(--card) 88%, black);
+      border: 1px solid #2a4a3c;
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+    label { display: block; font-size: 0.85rem; color: var(--muted); margin: 12px 0 6px; }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #335647;
+      background: #0c1814;
+      color: var(--ink);
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 18px;
+      width: 100%;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), #2bb673);
+      color: #062016;
+      cursor: pointer;
+    }
+    code, .mono {
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.85rem;
+      word-break: break-all;
+    }
+    .ok { color: var(--accent); }
+    .steps { counter-reset: s; list-style: none; padding: 0; }
+    .steps li {
+      counter-increment: s;
+      margin: 0 0 12px;
+      padding-left: 36px;
+      position: relative;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .steps li::before {
+      content: counter(s);
+      position: absolute;
+      left: 0; top: 0;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--accent2);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: grid; place-items: center;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1 class="brand">飞博<span>虾</span></h1>
+    <p class="lead">飞书写文章 → 台账点一下 → 自动发到你的博客导航目录。免费、傻瓜、好用。</p>
+
+    <div class="panel">
+      <ol class="steps">
+        <li>在飞书写好云文档</li>
+        <li>打开<a href="{{BASE_URL}}" target="_blank" rel="noreferrer">飞博虾台账</a>，填文档链接与导航栏目</li>
+        <li>把「一键操作」改成「立即发布」，或填「定时发布时间」</li>
+      </ol>
+    </div>
+
+    <form id="setup">
+      <h2 style="margin:0 0 8px;font-size:1.15rem;">绑定你的博客（只需一次）</h2>
+      <label>发布模式</label>
+      <select name="mode">
+        <option value="local">本机仓库（作者自己电脑）</option>
+        <option value="github">GitHub Pages（填 Token，适合其它用户）</option>
+      </select>
+      <label>GitHub 仓库 owner/repo</label>
+      <input name="repo" placeholder="duniang818/wahaha" />
+      <label>分支</label>
+      <input name="branch" value="main" />
+      <label>GitHub Token（classic PAT，需 repo 权限）</label>
+      <input name="token" type="password" placeholder="ghp_..." autocomplete="off" />
+      <label>站点地址</label>
+      <input name="siteUrl" placeholder="https://xxx.github.io/yyy/" />
+      <label>docs 目录名</label>
+      <input name="docsPath" value="docs" />
+      <button type="submit">保存绑定</button>
+      <p id="msg" class="mono" style="margin-top:12px;color:var(--muted)"></p>
+    </form>
+
+    <div class="panel">
+      <div>租户 ID：<span class="mono">{{TENANT_ID}}</span></div>
+      <div style="margin-top:8px">发布接口：<span class="mono">{{PUBLIC_URL}}/api/v1/publish</span></div>
+      <div style="margin-top:8px">Webhook 密钥：<span class="mono">{{WEBHOOK_SECRET}}</span></div>
+    </div>
+  </main>
+  <script>
+    const form = document.getElementById("setup");
+    const msg = document.getElementById("msg");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const body = Object.fromEntries(fd.entries());
+      body.tenant_id = "{{TENANT_ID}}";
+      msg.textContent = "保存中…";
+      try {
+        const res = await fetch("/api/v1/setup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.message || "失败");
+        msg.innerHTML = '<span class="ok">✓ 绑定成功</span><br>密钥：' + data.webhookSecret;
+      } catch (err) {
+        msg.textContent = "失败：" + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -4,9 +4,9 @@
   <h1>渡娘的空间</h1>
   <p>教育 · 旅行 · 技术 · 生活。本地 Markdown 写作，一键发布到博客与多平台。</p>
   <div class="dn-hero-actions">
-    <a class="dn-btn dn-btn-primary" href="education/">看名校资料</a>
+    <a class="dn-btn dn-btn-primary" href="feiboxia/">飞博虾工作台</a>
+    <a class="dn-btn dn-btn-ghost" href="education/">看名校资料</a>
     <a class="dn-btn dn-btn-ghost" href="travel/">规划旅行</a>
-    <a class="dn-btn dn-btn-ghost" href="blog/blog-index/">读随笔</a>
   </div>
 </div>
 

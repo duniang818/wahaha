@@ -5,6 +5,9 @@ __pycache__/
 .DS_Store
 sync/out/
 sync/assistant-defaults.json
+sync/feishu-cms.json
+feiboxia/data/
+!.gitkeep
 .env
 .env.local
 legacy-data/

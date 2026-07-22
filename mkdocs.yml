@@ -86,6 +86,8 @@ extra:
 
 nav:
   - 首页: index.md
+  - 飞博虾:
+      - feiboxia/index.md
   - 教育:
       - education/index.md
       - 世界名校: education/world-universities.md
@@ -100,6 +102,7 @@ nav:
       - 民族概览: travel/ethnic-groups.md
   - 技术:
       - tech/index.md
+      - 飞博虾: tech/feiboxia.md
       - Giscus 评论配置: tech/giscus-setup.md
       - 飞书一键发布: tech/feishu-publish.md
       - 终端博客助手: tech/blog-assistant.md
