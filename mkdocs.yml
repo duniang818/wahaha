@@ -1,13 +1,28 @@
-﻿site_name: 我的空间
-site_url: https://duniang818.github.io/superset-fork/
-repo_url: https://github.com/duniang818/superset-fork
-repo_name: superset-fork
-edit_uri: edit/private/docs/
-site_description: duniang818 的个人博客（MkDocs Material）
+﻿site_name: 渡娘的空间
+site_url: https://duniang818.github.io/
+repo_url: https://github.com/duniang818/duniang818.github.io
+repo_name: duniang818.github.io
+edit_uri: edit/main/docs/
+site_description: 教育 · 旅行 · 技术 · 生活 — 个人知识库与博客
 
 theme:
   name: material
   language: zh
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: 切换暗色
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: 切换亮色
   features:
     - toc.follow
     - navigation.instant
@@ -19,12 +34,14 @@ theme:
     - navigation.expand
     - navigation.footer
     - content.code.annotate
+    - content.code.copy
     - search.suggest
     - search.highlight
 
 docs_dir: docs
 not_in_nav: |
   /private/**/*.md
+  /.md
 
 plugins:
   - search
@@ -52,17 +69,33 @@ markdown_extensions:
 
 nav:
   - 首页: index.md
-  - 工具:
-      - tools/tools-index.md
-      - mkdocs:
-          - 搭建: tools/如何利用Mkdocs+Material+GithubPages搭建个人博客.md
-          - 配置: tools/配置mkdocs.md
-      - obsidian: tools/obsidian.md
-  - 分析:
-      - analysis/analysis-index.md
-      - 安装部署: analysis/0 Xset 4.0.0在Windows上源码部署.md
-  - 汽车: car/car-index.md
-  - 生活: life/life-index.md
-  - 博客: blog/blog-index.md
-  - GitFork: gitfork/gitfork-index.md
-  - Todo: todos/todos-index.md
+  - 教育:
+      - education/index.md
+      - 世界名校: education/world-universities.md
+      - 985 大学: education/985.md
+      - 211 大学: education/211.md
+  - 旅行:
+      - travel/index.md
+      - 5A 景区: travel/attractions-5a.md
+      - 博物馆: travel/museums.md
+      - 城市美食: travel/city-food.md
+      - 人文风俗: travel/city-culture.md
+      - 民族概览: travel/ethnic-groups.md
+  - 技术:
+      - tech/index.md
+      - 工具:
+          - tools/tools-index.md
+          - 搭建博客: tools/如何利用Mkdocs+Material+GithubPages搭建个人博客.md
+          - 配置 MkDocs: tools/配置mkdocs.md
+          - Obsidian: tools/obsidian.md
+      - 分析:
+          - analysis/analysis-index.md
+          - Superset 部署: analysis/0 Xset 4.0.0在Windows上源码部署.md
+  - 生活:
+      - life/index.md
+      - 生活笔记: life/life-index.md
+      - 汽车: car/car-index.md
+      - Todo: todos/todos-index.md
+      - 博客索引: blog/blog-index.md
+      - GitFork: gitfork/gitfork-index.md
+  - 关于: about.md

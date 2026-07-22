@@ -1,30 +1,44 @@
-# 我的空间（旧博客）
+# 渡娘的空间
 
-线上地址：https://duniang818.github.io/superset-fork/  
-仓库：https://github.com/duniang818/superset-fork（源码在 **private** 分支，站点在 **gh-pages**）
+本地唯一工程目录：`D:\my-blog`  
+线上唯一入口：https://duniang818.github.io/
 
 ## 本地预览
 
-```bash
+```powershell
 cd D:\my-blog
-python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
 mkdocs serve
+# http://127.0.0.1:8000/
 ```
 
-浏览器打开：http://127.0.0.1:8000/ （路径与线上 `/superset-fork/` 内容一致）
+## 写文章 / 改资料
 
-## 写作与发布
+| 分区 | 路径 |
+|------|------|
+| 教育 | `docs/education/` |
+| 旅行 | `docs/travel/` |
+| 技术 | `docs/tech/`、`docs/tools/`、`docs/analysis/` |
+| 生活随笔 | `docs/life/`、`docs/blog/posts/` |
 
-1. 编辑 `docs/**/*.md`
-2. `mkdocs serve` 本地确认
-3. 提交并推送到 `private`（或你的写作分支）
-4. 构建并发布到 `gh-pages`：
+从旧 React 资料站重新导入数据：
 
-```bash
-mkdocs build
-# 将 site/ 内容部署到 gh-pages 分支根目录
+```powershell
+node scripts/migrate-from-githubio.mjs
 ```
 
-或使用 GitHub Actions（见仓库内原有工作流）。
+## 发布
+
+```powershell
+git add .
+git commit -m "docs: update"
+git push origin main
+```
+
+GitHub Actions 自动构建并发布到用户站根域名。  
+仓库 Settings → Pages → Source 选 **GitHub Actions**。
+
+## 与旧目录关系
+
+- `D:\githubio\legacy`：原始 React 数据源（可归档，不必再部署）
+- `D:\githubio\portal`：曾作临时入口；现由本站首页取代
