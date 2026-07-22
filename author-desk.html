@@ -5,29 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>作者发布台（仅本机）</title>
   <style>
-    body{font-family:system-ui,sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.6}
+    body{font-family:system-ui,sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#0f172a}
     code,pre{background:#f4f4f5;padding:.15rem .35rem;border-radius:4px}
     pre{padding:1rem;overflow:auto}
     .warn{background:#fff7ed;border:1px solid #fdba74;padding:.8rem 1rem;border-radius:8px}
+    .ok{background:#ecfdf5;border:1px solid #6ee7b7;padding:.8rem 1rem;border-radius:8px;margin:1rem 0}
     h1{font-size:1.6rem}
+    h2{margin-top:1.8rem;font-size:1.15rem}
   </style>
 </head>
 <body>
-  <h1>作者发布台（L1 权限 · 仅本机）</h1>
-  <p class="warn">此页不部署到公网。访客无法使用发布能力。密钥只放在本机 <code>.env</code>。</p>
-  <h2>单篇发布</h2>
+  <h1>作者发布台（L1 · 仅本机）</h1>
+  <p class="warn">访客看不到本页。密钥只放本机 <code>.env</code>。</p>
+
+  <div class="ok">
+    <strong>推荐工作流：飞书写作 → 一键上博客</strong>
+    <pre>lark-cli auth login
+npm run from-feishu -- "https://xxx.feishu.cn/docx/TOKEN" --push
+# 同时发外站：
+npm run from-feishu -- "URL" --push --also wechat,xhs,csdn,zhihu</pre>
+  </div>
+
+  <h2>飞书 → 博客</h2>
+  <pre>npm run from-feishu -- "&lt;飞书文档URL&gt;"
+npm run from-feishu -- "&lt;URL&gt;" --slug my-post --dir blog/posts --push
+npm run from-feishu -- --list</pre>
+
+  <h2>博客 Markdown → 外站</h2>
   <pre>npm run publish:one -- welcome --to wechat,xhs,csdn,zhihu
-npm run publish:one -- welcome --dry-run</pre>
-  <h2>批量发布</h2>
-  <pre>npm run publish:batch -- --tag 旅行 --to xhs,wechat --dry-run
-npm run publish:batch -- --tag 旅行 --to xhs</pre>
-  <h2>权限规则</h2>
+npm run publish:batch -- --tag 旅行 --to xhs --dry-run</pre>
+
+  <h2>权限</h2>
   <ul>
-    <li><code>docs/private/**</code> 或 <code>visibility: private</code> → 禁止外发</li>
+    <li><code>docs/private/**</code> / <code>visibility: private</code> → 禁止外发</li>
     <li><code>draft: true</code> → 禁止外发</li>
-    <li><code>platforms:</code> 白名单限制可发平台</li>
+    <li>加 <code>--private</code> 可把飞书文写入私密区（仅本机）</li>
   </ul>
-  <h2>本地预览博客</h2>
+
+  <h2>本地预览</h2>
   <pre>npm run dev
 # http://127.0.0.1:8000/</pre>
 </body>

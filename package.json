@@ -10,6 +10,8 @@
     "sync:csdn": "node sync/csdn.js",
     "sync:zhihu": "node sync/zhihu.js",
     "sync:feishu": "node sync/feishu.js",
+    "from-feishu": "node sync/feishu-to-blog.js",
+    "publish:from-feishu": "node sync/feishu-to-blog.js",
     "publish:one": "node sync/publish-all.js",
     "publish:batch": "node sync/publish-all.js --batch",
     "publish:dry": "node sync/publish-all.js --dry-run",
