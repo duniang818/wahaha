@@ -1,5 +1,5 @@
 {
-  "action": "publish",
+  "action": "republish",
   "base_token": "ADtHbOF0raWJj0stRApcfjjInLg",
   "doc_token": "NvC5dYXOco8X28xnCbScFQXnnng",
   "doc_url": "https://my.feishu.cn/docx/NvC5dYXOco8X28xnCbScFQXnnng",
@@ -7,11 +7,11 @@
   "platforms": "blog",
   "slug": "feishu-github-blog-guide",
   "table_id": "tblfvnQ3mm7DlX9X",
-  "tags": "技术,飞博虾",
+  "tags": "博客,飞博虾",
   "title": "用飞书写作 +自研云文档小组件（飞博虾）+ GitHub Pages 建个人博客（可复制实操）\n",
   "resolvedSlug": "feishu-github-blog-guide",
   "wroteMarkdown": false,
   "unpublished": false,
   "blogRel": null,
-  "handledAt": "2026-07-23T07:16:08.747Z"
+  "handledAt": "2026-07-23T07:46:28.068Z"
 }
