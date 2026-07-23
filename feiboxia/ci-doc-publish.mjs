@@ -20,6 +20,7 @@ import {
   fetchDocBlocksMarkdown,
 } from "./lib/feishu-doc.js";
 import { normalizeNavDir } from "./lib/publish.js";
+import { movePost } from "./lib/post-manage.js";
 import { ROOT } from "./lib/tenant.js";
 
 /** 栏目 → 默认标签（与小组件 NAV_META 一致） */
@@ -356,7 +357,28 @@ async function upsertLedger(token, payload, extra = {}) {
 
 async function writeLocalMarkdown(payload, token) {
   const resolved = resolveSlug(payload);
-  const { slug, navDir } = resolved;
+  const targetNav = normalizeNavDir(payload.nav_dir || resolved.navDir);
+  const action = String(payload.action || payload.mode || "publish");
+
+  if (
+    resolved.existing &&
+    (action === "republish" || action === "publish") &&
+    (resolved.existing.navDir !== targetNav || payload.tags)
+  ) {
+    try {
+      movePost({
+        slug: resolved.existing.slug,
+        docUrl: payload.doc_url,
+        docToken: payload.doc_token,
+        navDir: targetNav,
+        tags: payload.tags,
+      });
+    } catch (e) {
+      console.warn("移动/更新标签:", e.message || e);
+    }
+  }
+
+  const { slug, navDir } = resolveSlug(payload);
   let content = "";
   let docId = payload.doc_token || extractDocToken(payload.doc_url || "") || "";
 

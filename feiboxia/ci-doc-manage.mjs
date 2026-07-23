@@ -5,7 +5,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { deletePost, movePost, listPosts } from "./lib/post-manage.js";
+import { deletePost, movePost, listPosts, pullBindPost, revokePostByUrl } from "./lib/post-manage.js";
 import { ROOT } from "./lib/tenant.js";
 
 function loadPayload() {
@@ -39,12 +39,26 @@ if (action === "move" || action === "retag") {
     docToken: payload.doc_token,
   });
   console.log("✓ 已删除", result.deleted);
+} else if (action === "pull") {
+  result = pullBindPost({
+    postUrl: payload.post_url,
+    docUrl: payload.doc_url,
+    docToken: payload.doc_token,
+    siteUrl: payload.site_url,
+  });
+  console.log("✓ 已拉取绑定", result.rel);
+} else if (action === "revoke") {
+  result = revokePostByUrl({
+    postUrl: payload.post_url,
+    siteUrl: payload.site_url,
+  });
+  console.log("✓ 已撤销", result.deleted);
 } else if (action === "list") {
   result = listPosts();
   console.log(JSON.stringify(result, null, 2));
   process.exit(0);
 } else {
-  throw new Error(`未知 action: ${action}（支持 move / delete / retag / list）`);
+  throw new Error(`未知 action: ${action}（支持 move / delete / pull / revoke / retag / list）`);
 }
 
 fs.mkdirSync(path.join(ROOT, "feiboxia/queue"), { recursive: true });

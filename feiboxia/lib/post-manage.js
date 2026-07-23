@@ -203,6 +203,90 @@ export function deletePost({ slug, docUrl, docToken }) {
   return { slug: hit.slug, deleted: hit.rel, docId };
 }
 
+/** 从博客 Pages URL 解析 nav_dir + slug */
+export function parseBlogPostUrl(postUrl, siteUrl = "") {
+  try {
+    const u = new URL(String(postUrl || "").trim());
+    let p = u.pathname;
+    if (siteUrl) {
+      try {
+        const base = new URL(siteUrl).pathname.replace(/\/+$/, "");
+        if (base && base !== "/" && p.startsWith(base)) p = p.slice(base.length);
+      } catch {
+        /* ignore */
+      }
+    }
+    p = p.replace(/^\/+|\/+$/g, "");
+    if (!p) return null;
+    const parts = p.split("/").filter(Boolean);
+    if (!parts.length) return null;
+    const slug = parts[parts.length - 1];
+    const navDir = parts.slice(0, -1).join("/") || "blog/posts";
+    return { slug, navDir, rel: `${navDir}/${slug}.md` };
+  } catch {
+    return null;
+  }
+}
+
+export function findPostByBlogUrl(postUrl, siteUrl = "") {
+  const parsed = parseBlogPostUrl(postUrl, siteUrl);
+  if (!parsed) throw new Error("无法解析博文 URL");
+
+  const file = path.join(DOCS, parsed.rel);
+  if (fs.existsSync(file)) {
+    return {
+      file,
+      rel: parsed.rel,
+      slug: parsed.slug,
+      navDir: parsed.navDir,
+    };
+  }
+  const hit = findPost({ slug: parsed.slug });
+  if (hit) return hit;
+  throw new Error(`未找到线上博文：${parsed.rel}`);
+}
+
+/** 飞书无绑定、线上有：将当前飞书文档绑定到已有博文（不改正文） */
+export function pullBindPost({ postUrl, docUrl, docToken, siteUrl }) {
+  const hit = findPostByBlogUrl(postUrl, siteUrl);
+  const text = fs.readFileSync(hit.file, "utf8");
+  const { meta, body } = parseFrontmatter(text);
+  const docId = docToken || extractDocToken(docUrl || "");
+  if (!docId) throw new Error("缺少飞书 doc_token");
+
+  meta.feishu_doc = docId;
+  if (docUrl) meta.feishu_url = docUrl;
+
+  fs.writeFileSync(hit.file, stringifyFrontmatter(meta) + body, "utf8");
+
+  const map = loadMap();
+  map[docId] = {
+    ...(map[docId] || {}),
+    slug: hit.slug,
+    path: hit.rel,
+    title: meta.title || hit.slug,
+    url: docUrl,
+    navDir: hit.navDir,
+    pulledAt: new Date().toISOString(),
+    via: "post-manage-pull",
+  };
+  saveMap(map);
+
+  return {
+    slug: hit.slug,
+    rel: hit.rel,
+    navDir: hit.navDir,
+    title: meta.title,
+    tags: meta.tags,
+  };
+}
+
+/** 按线上 URL 撤销（删除博文文件） */
+export function revokePostByUrl({ postUrl, siteUrl }) {
+  const hit = findPostByBlogUrl(postUrl, siteUrl);
+  return deletePost({ slug: hit.slug });
+}
+
 export function listPosts() {
   return walkMarkdown(DOCS)
     .map(file => {

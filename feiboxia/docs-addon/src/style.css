@@ -197,6 +197,49 @@ body {
 
 .status-line { margin: 0 0 6px; font-size: 11px; }
 
+.hd-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.act.setup {
+  padding: 2px 8px;
+  font-size: 10px;
+}
+
+.cmd-bar {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin: 6px 0 8px;
+}
+.cmd-bar-top { margin-top: 0; }
+.cmd-bar-bottom { margin-bottom: 4px; }
+.cmd-btn {
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 7px 6px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.cmd-btn.primary:not(:disabled) {
+  background: linear-gradient(90deg, var(--accent), #ffb08a 55%, var(--accent2));
+  color: #3a1218;
+  border-color: transparent;
+}
+.cmd-btn.danger:not(:disabled) {
+  color: var(--danger);
+  border-color: rgba(255, 107, 138, 0.45);
+}
+.cmd-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .top-acts {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
