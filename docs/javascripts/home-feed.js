@@ -225,10 +225,7 @@
   }
 
   function isHome() {
-    return (
-      document.body.classList.contains("md-page-index") ||
-      document.querySelector('[data-md-component="content"] h1')?.textContent === "渡娘的空间"
-    );
+    return !!document.getElementById("dn-post-grid");
   }
 
   function boot() {
