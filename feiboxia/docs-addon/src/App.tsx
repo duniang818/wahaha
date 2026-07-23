@@ -428,6 +428,7 @@ export function App() {
   const collapsedRef = useRef(false);
   const pinOpen = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const cfgSnapshot = useRef<Cfg | null>(null);
 
   const blogReady = platformReady(cfg, "blog");
   const navs = cfg.navs?.length ? cfg.navs : DEFAULT_NAVS;
@@ -561,7 +562,7 @@ export function App() {
         };
         setCfg(merged);
         if (!merged.githubPat?.trim()) {
-          setShowSetup(true);
+          openSetup();
           setMsg("首次使用：请先在「设置」填写 GitHub PAT");
         }
 
@@ -620,10 +621,25 @@ export function App() {
       savedAt: new Date().toISOString(),
     });
     setMsg("✓ 设置已保存");
-    setShowSetup(false);
+    closeSetup(true);
     if (next.githubPat?.trim()) {
       await refreshStatus(next, nav, slug);
     }
+  }
+
+  function openSetup() {
+    cfgSnapshot.current = { ...cfg };
+    setShowSetup(true);
+    setMsg("");
+  }
+
+  function closeSetup(saved: boolean) {
+    if (!saved && cfgSnapshot.current) {
+      setCfg(cfgSnapshot.current);
+    }
+    cfgSnapshot.current = null;
+    setShowSetup(false);
+    if (!saved) setMsg("");
   }
 
   function togglePlat(id: PlatformId) {
@@ -676,6 +692,10 @@ export function App() {
   }
 
   async function dispatchGithub(eventType: string, clientPayload: Record<string, unknown>) {
+    const keys = Object.keys(clientPayload);
+    if (keys.length > 10) {
+      throw new Error(`dispatch 字段超限（${keys.length}/10）: ${keys.join(", ")}`);
+    }
     const res = await fetch(
       `https://api.github.com/repos/${cfg.githubRepo}/dispatches`,
       {
@@ -704,7 +724,7 @@ export function App() {
 
   async function runCmd(cmd: Cmd) {
     if (!blogReady) {
-      setShowSetup(true);
+      openSetup();
       setMsg("请先在「设置」填写 GitHub 仓库与 PAT");
       return;
     }
@@ -737,7 +757,7 @@ export function App() {
       for (const id of selected) {
         if (id === "blog") continue;
         if (!platformReady(cfg, id)) {
-          setShowSetup(true);
+          openSetup();
           setMsg(`「${PLATFORMS.find(p => p.id === id)?.name}」未对接，请到设置填写`);
           return;
         }
@@ -788,7 +808,6 @@ export function App() {
         table_id: cfg.tableId,
         platforms: selected.join(","),
         tags: tagsPayload() || tagsForNav(nav).join(","),
-        site_url: cfg.siteUrl,
       });
 
       setStatus("published");
@@ -938,9 +957,9 @@ export function App() {
             <button
               type="button"
               className={`act setup ${showSetup ? "on" : ""}`}
-              onClick={() => setShowSetup(v => !v)}
+              onClick={() => (showSetup ? closeSetup(false) : openSetup())}
             >
-              设置
+              {showSetup ? "返回" : "设置"}
             </button>
           </div>
         </header>
@@ -1019,14 +1038,24 @@ export function App() {
               onBlur={onBlurField}
               placeholder="知乎备注"
             />
-            <button
-              type="button"
-              className="cta"
-              disabled={busy}
-              onClick={() => void saveCfg(cfg)}
-            >
-              {confirmLabel}
-            </button>
+            <div className="setup-acts">
+              <button
+                type="button"
+                className="ghost"
+                disabled={busy}
+                onClick={() => closeSetup(false)}
+              >
+                返回
+              </button>
+              <button
+                type="button"
+                className="cta"
+                disabled={busy}
+                onClick={() => void saveCfg(cfg)}
+              >
+                {confirmLabel}
+              </button>
+            </div>
           </section>
         ) : (
           <section className="panel">
@@ -1194,8 +1223,6 @@ export function App() {
                 Actions
               </button>
             </div>
-
-            {renderCmdBar("cmd-bar-bottom")}
           </section>
         )}
 

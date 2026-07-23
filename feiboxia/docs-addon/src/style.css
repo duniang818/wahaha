@@ -216,6 +216,15 @@ body {
 }
 .cmd-bar-top { margin-top: 0; }
 .cmd-bar-bottom { margin-bottom: 4px; }
+
+.setup-acts {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.setup-acts .cta { flex: 1; }
+.setup-acts .ghost { flex: 0 0 auto; padding: 7px 12px; }
+
 .cmd-btn {
   border: 1px solid var(--line);
   background: rgba(0, 0, 0, 0.22);
