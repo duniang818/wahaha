@@ -148,7 +148,7 @@ body {
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 8px 10px 4px;
+  padding: 8px 10px 10px;
 }
 
 .panel-footer {
