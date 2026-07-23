@@ -378,14 +378,19 @@ async function writeLocalMarkdown(payload, token) {
     }
   }
 
-  // 2) lark-cli markdown
+  // 2) lark-cli markdown（CI 优先 bot 身份，本机可 user）
   if (!content) {
-    try {
-      const fetched = fetchFeishuMarkdown(payload.doc_url);
-      content = fetched.content;
-      docId = fetched.docId || docId;
-    } catch (e) {
-      errors.push(`lark-cli: ${e.message || e}`);
+    const identities = token ? ["bot", "user"] : ["user", "bot"];
+    for (const who of identities) {
+      try {
+        const fetched = fetchFeishuMarkdown(payload.doc_url, { as: who });
+        content = fetched.content;
+        docId = fetched.docId || docId;
+        console.log(`✓ lark-cli markdown (${who})`);
+        break;
+      } catch (e) {
+        errors.push(`lark-cli/${who}: ${e.message || e}`);
+      }
     }
   }
 

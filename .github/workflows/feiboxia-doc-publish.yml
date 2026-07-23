@@ -37,9 +37,16 @@ jobs:
           cp /tmp/payload.json feiboxia/queue/doc-dispatch.json
           cat feiboxia/queue/doc-dispatch.json
 
-      - name: Install lark-cli (optional user path)
-        continue-on-error: true
-        run: npm i -g @larksuite/cli
+      - name: Install and configure lark-cli
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+        run: |
+          npm i -g @larksuite/cli
+          if [ -n "$FEISHU_APP_ID" ] && [ -n "$FEISHU_APP_SECRET" ]; then
+            mkdir -p "$HOME/.lark-cli"
+            node -e "const fs=require('fs');const id=process.env.FEISHU_APP_ID;const sec=process.env.FEISHU_APP_SECRET;const p=require('path').join(process.env.HOME,'.lark-cli','config.json');fs.writeFileSync(p,JSON.stringify({appId:id,appSecret:sec,lang:'zh_cn',brand:'feishu',profile:id,profiles:{[id]:{appId:id,appSecret:sec}}},null,2));"
+          fi
 
       - name: Run feiboxia doc publish
         env:

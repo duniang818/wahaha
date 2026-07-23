@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
-export function fetchFeishuMarkdown(docUrlOrToken) {
+export function fetchFeishuMarkdown(docUrlOrToken, { as = "user" } = {}) {
   const r = spawnSync(
     "lark-cli",
     [
@@ -14,7 +14,7 @@ export function fetchFeishuMarkdown(docUrlOrToken) {
       "--api-version",
       "v2",
       "--as",
-      "user",
+      as === "bot" ? "bot" : "user",
       "--doc",
       docUrlOrToken,
       "--doc-format",
@@ -202,7 +202,16 @@ export function markdownFromFeishu(md) {
   let title = "";
   const h1 = text.match(/^#\s+(.+)$/m);
   if (h1) title = h1[1].trim();
-  return { title, body: text.replace(/^\s*#\s+.+\n+/, "").trim() };
+  return { title, body: sanitizeFeishuMarkdown(text.replace(/^\s*#\s+.+\n+/, "")) };
+}
+
+/** 去掉飞书 markdown 里的 grid/column 容器，保留图片 */
+export function sanitizeFeishuMarkdown(body) {
+  return String(body || "")
+    .replace(/<\/?grid[^>]*>/gi, "\n")
+    .replace(/<\/?column[^>]*>/gi, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 const FEISHU_IMG_HOST =
@@ -241,7 +250,8 @@ export async function mirrorImagesInMarkdown(body, { slug, navDir, token, docsRo
     if (rawUrl.startsWith("/") || rawUrl.startsWith("assets/")) continue;
 
     try {
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const isFeishuCdn = FEISHU_IMG_HOST.test(rawUrl);
+      const headers = token && !isFeishuCdn ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch(rawUrl, { headers, redirect: "follow" });
       if (!res.ok) continue;
       const buf = Buffer.from(await res.arrayBuffer());
