@@ -2,8 +2,8 @@
 title: 飞书一键发布测试
 author: 渡娘
 date: 2026-07-23
-visibility: public
-draft: false
+visibility: private
+draft: true
 feishu_doc: OGj3dcxuxowNetxgQudc771znhr
 feishu_url: https://my.feishu.cn/docx/OGj3dcxuxowNetxgQudc771znhr
 nav: 博客

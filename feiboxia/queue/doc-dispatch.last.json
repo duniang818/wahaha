@@ -1,0 +1,17 @@
+{
+  "action": "unpublish",
+  "base_token": "ADtHbOF0raWJj0stRApcfjjInLg",
+  "doc_token": "OGj3dcxuxowNetxgQudc771znhr",
+  "doc_url": "https://my.feishu.cn/docx/OGj3dcxuxowNetxgQudc771znhr",
+  "nav_dir": "blog/posts",
+  "platforms": "blog",
+  "slug": "feishu-oneclick-test",
+  "table_id": "tblfvnQ3mm7DlX9X",
+  "tags": "博客,飞博虾",
+  "title": "飞书一键发布测试\n",
+  "resolvedSlug": "feishu-oneclick-test",
+  "wroteMarkdown": false,
+  "unpublished": true,
+  "blogRel": "blog/posts/feishu-oneclick-test.md",
+  "handledAt": "2026-07-23T05:34:03.984Z"
+}
