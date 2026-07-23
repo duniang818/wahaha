@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-23T03:34:16.665Z",
+  "generatedAt": "2026-07-23T09:12:12.542Z",
   "navTags": [
     "博客",
     "教育",
@@ -9,18 +9,6 @@
     "其他"
   ],
   "posts": [
-    {
-      "title": "飞书一键发布测试",
-      "url": "/blog/posts/feishu-oneclick-test/",
-      "date": "2026-07-23",
-      "nav": "博客",
-      "tags": [
-        "博客",
-        "测试"
-      ],
-      "excerpt": "这是一篇由博客助手自动创建的测试文章。 流程验证 1. 在飞书写作 2. 本机一键同步到 MkDocs 博客 3. 可选推送到 GitHub Pages 写于 20260722 11:09。",
-      "thumb": "blog/posts/assets/feishu-oneclick-test/img-01.png"
-    },
     {
       "title": "用飞书写作 + GitHub Pages 建个人博客（可复制实操）",
       "url": "/blog/posts/feishu-github-blog-guide/",

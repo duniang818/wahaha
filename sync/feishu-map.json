@@ -16,5 +16,14 @@
     "via": "feiboxia",
     "feishu_location": "我的空间（云空间根目录，可手动移入「飞博虾博客」文件夹）",
     "cms_base": "https://my.feishu.cn/base/ADtHbOF0raWJj0stRApcfjjInLg"
+  },
+  "XXdPdFNDooTcU5x8sW5cKpJcnuc": {
+    "slug": "feiboxia",
+    "path": "tech/feiboxia.md",
+    "title": "feiboxia",
+    "url": "https://my.feishu.cn/docx/XXdPdFNDooTcU5x8sW5cKpJcnuc",
+    "navDir": "tech",
+    "pulledAt": "2026-07-23T09:12:12.497Z",
+    "via": "post-manage-pull"
   }
 }

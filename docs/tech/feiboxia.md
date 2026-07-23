@@ -1,3 +1,7 @@
+---
+feishu_doc: XXdPdFNDooTcU5x8sW5cKpJcnuc
+feishu_url: "https://my.feishu.cn/docx/XXdPdFNDooTcU5x8sW5cKpJcnuc"
+---
 # 飞博虾
 
 飞书里写、GitHub 上发。**不需要自有公网。**
