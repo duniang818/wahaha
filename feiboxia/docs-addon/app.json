@@ -5,14 +5,17 @@
   "blockTypeID": "blk_6a2623e44bdc0bf3ee272366",
   "projectName": "飞博虾",
   "contributes": {
-    "addPanel": {
-      "initialHeight": 640,
+    "topbar": {
       "view": "index.html",
-      "useHostLoading": true,
-      "useInteraction": true
-    },
-    "popup": {
-      "view": "index.html"
+      "minify": false,
+      "hideHeader": true,
+      "initialHeight": 520,
+      "initialWidth": 340,
+      "backgroundColor": {
+        "light": "#1a0f12",
+        "dark": "#1a0f12"
+      },
+      "useHostLoading": true
     }
   }
 }

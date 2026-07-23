@@ -91,3 +91,56 @@ npm run blog   # 选 3 从台账一键发布
 - `sync/feishu-cms-init.js` / `feishu-cms-publish.js` — 台账
 - `sync/feishu-map.json` — 文档 ↔ 本地文件绑定
 - `sync/feishu-cms.json` — 台账 token（本机，不提交）
+- `feiboxia/lib/post-manage.js` — 作者移动/改标签/删除
+- `scripts/manage-post.mjs` — 本机 CLI
+- `.github/workflows/feiboxia-doc-manage.yml` — 飞博虾触发 Actions
+
+## 作者管理（仅作者可操作）
+
+公开博客是静态站，**访客无法在网页上删改文章**。只有持有 GitHub PAT 的作者，才能通过 **飞书飞博虾小组件** 或 **本机命令** 管理博文。
+
+| 操作 | 怎么做 | 飞书文档 | 本地仓库 | 线上博客 |
+|------|--------|----------|----------|----------|
+| **改正文** | 飞书编辑 → 飞博虾「重新发布」 | 源 | CI 写入 `docs/` | 自动部署 |
+| **移动栏目** | 飞博虾选栏目 →「移动栏目/更新标签」 | 保留 | Actions commit | 约 1~5 分钟 |
+| **改标签** | 同上（只改标签也可） | 保留 | 同上 | 同上 |
+| **删除博文** | 飞博虾「删除博文」或本机 `post:delete` | **保留**（可再发布） | 删 md + 配图 | 下线 |
+
+### 飞书飞博虾（推荐）
+
+1. 在飞书文档侧边栏打开飞博虾，设置里填 GitHub 仓库与 PAT（需 `repo` + `workflow` 权限）。
+2. 文章已发布后，展开「作者管理」：
+   - **移动栏目/更新标签**：按当前选择的栏目与标签更新 frontmatter，并移动 `docs/` 下文件。
+   - **删除博文**：从博客移除，飞书原文不动。
+3. 触发 [飞博虾·博文管理](https://github.com/duniang818/wahaha/actions/workflows/feiboxia-doc-manage.yml) workflow，成功后自动 commit + push。
+
+### 本机 CLI
+
+```powershell
+cd D:\my-blog
+npm run post:list
+npm run post:move -- feishu-oneclick-test --nav travel --tags 旅行,测试
+npm run post:tags -- feishu-oneclick-test --tags 博客,飞书
+npm run post:delete -- feishu-oneclick-test
+# 加 --push 可本地 commit + push（不经过飞书）
+```
+
+### 三端如何保持同步
+
+```text
+                    ┌─────────────┐
+                    │  飞书文档    │  ← 正文唯一编辑源
+                    └──────┬──────┘
+                           │ 发布 / 重新发布
+                           ▼
+┌──────────┐    pull     ┌─────────────┐    push    ┌──────────────┐
+│ 本机仓库  │ ◄────────── │ GitHub 仓库  │ ─────────► │ GitHub Pages │
+└──────────┘             └─────────────┘            └──────────────┘
+      ▲                         ▲
+      │  post:* --push          │ 飞博虾 dispatch / CI
+      └─────────────────────────┘
+```
+
+- **本机 ↔ GitHub**：飞博虾或 CI 改完后，本机执行 `git pull`；本机 `--push` 后远程即最新。
+- **飞书 ↔ 博客正文**：始终通过「发布 / 重新发布」同步；移动/删标签/删除不改正文。
+- **删除后再发**：同一飞书文档可再次「发布」，按 `sync/feishu-map.json` 绑定同一 slug 或新建。

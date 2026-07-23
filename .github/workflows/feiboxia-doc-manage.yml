@@ -1,0 +1,54 @@
+name: 飞博虾·博文管理
+
+# 作者：移动栏目 / 改标签 / 删除博文（需 GitHub PAT repository_dispatch）
+
+on:
+  repository_dispatch:
+    types: [feiboxia-doc-manage]
+  workflow_dispatch:
+    inputs:
+      payload_json:
+        description: "client_payload JSON"
+        required: false
+        default: "{}"
+
+permissions:
+  contents: write
+
+jobs:
+  manage-post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Prepare payload
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo '${{ toJson(github.event.client_payload) }}' > feiboxia/queue/doc-manage.json
+          else
+            echo '${{ inputs.payload_json }}' > feiboxia/queue/doc-manage.json
+          fi
+          cat feiboxia/queue/doc-manage.json
+
+      - name: Run post manage
+        env:
+          CLIENT_PAYLOAD: ${{ github.event_name == 'repository_dispatch' && toJson(github.event.client_payload) || inputs.payload_json }}
+        run: |
+          node feiboxia/ci-doc-manage.mjs
+          node scripts/build-posts-index.mjs
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "feiboxia-bot"
+          git config user.email "feiboxia@users.noreply.github.com"
+          git add docs sync/feishu-map.json docs/javascripts/posts-index.json docs/javascripts/posts-index-preview.json feiboxia/queue
+          git commit -m "docs: 飞博虾作者管理博文"
+          git push
