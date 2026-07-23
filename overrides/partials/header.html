@@ -1,7 +1,7 @@
-{#- Unified single-row header: brand | tabs | actions -#}
+{#- Unified single-row header: brand | nav | actions -#}
 {% set class = "md-header md-header--shadow dn-unified-header" %}
 <header class="{{ class }}" data-md-component="header">
-  <nav class="md-header__inner md-grid dn-header-row" aria-label="{{ lang.t('header') }}">
+  <nav class="md-header__inner dn-header-row" aria-label="{{ lang.t('header') }}">
     <div class="dn-header__brand">
       <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" title="{{ config.site_name | e }}" class="md-header__button md-logo" aria-label="{{ config.site_name }}" data-md-component="logo">
         {% include "partials/logo.html" %}
@@ -10,20 +10,12 @@
         {% set icon = config.theme.icon.menu or "material/menu" %}
         {% include ".icons/" ~ icon ~ ".svg" %}
       </label>
-      <div class="md-header__title" data-md-component="header-title">
-        <div class="md-header__ellipsis">
-          <div class="md-header__topic">
-            <span class="md-ellipsis">
-              {{ config.site_name }}
-            </span>
-          </div>
-        </div>
-      </div>
+      <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" class="dn-header__sitename">{{ config.site_name }}</a>
     </div>
 
     {% if "navigation.tabs" in features %}
       <div class="dn-header__nav">
-        {% include "partials/tabs.html" %}
+        {% include "partials/header-tabs.html" %}
       </div>
     {% endif %}
 

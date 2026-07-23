@@ -1,0 +1,21 @@
+{#- Simple top nav links (avoid Material md-tabs transform/opacity issues) -#}
+<nav class="dn-topnav" aria-label="{{ lang.t('tabs') }}">
+  <ul class="dn-topnav__list">
+    {% for nav_item in nav.items %}
+      {% set ns = namespace(active=false, href=nav_item.url, label=nav_item.title) %}
+      {% if nav_item.children %}
+        {% set ns.href = (nav_item.children | first).url %}
+        {% for child in nav_item.children %}
+          {% if child.active %}
+            {% set ns.active = true %}
+          {% endif %}
+        {% endfor %}
+      {% elif nav_item.active %}
+        {% set ns.active = true %}
+      {% endif %}
+      <li class="dn-topnav__item{% if ns.active %} dn-topnav__item--active{% endif %}">
+        <a href="{{ ns.href | url }}" class="dn-topnav__link">{{ ns.label }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>
