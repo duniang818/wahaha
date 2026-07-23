@@ -7,10 +7,10 @@ draft: false
 feishu_doc: NvC5dYXOco8X28xnCbScFQXnnng
 feishu_url: "https://my.feishu.cn/docx/NvC5dYXOco8X28xnCbScFQXnnng"
 tags:
-  - 博客
+  - 技术
   - 飞博虾
 description: "不买服务器、不租公网：飞书里写文章，GitHub 托管博客。本文给出可直接照做的步骤与命令。"
-nav: 博客
+nav: 技术
 ---
 
 如果你也想要「在飞书写随笔，点一下就出现在自己的博客站点」，又**不想自己架公网服务器**，可以用这套组合：
