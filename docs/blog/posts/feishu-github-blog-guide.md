@@ -1,18 +1,16 @@
 ---
-title: 用飞书写作 + GitHub Pages 建个人博客（可复制实操）
+title: "用飞书写作 + GitHub Pages 建个人博客（可复制实操）"
 author: 渡娘
 date: 2026-07-22
 visibility: public
 draft: false
 feishu_doc: NvC5dYXOco8X28xnCbScFQXnnng
-feishu_url: https://my.feishu.cn/docx/NvC5dYXOco8X28xnCbScFQXnnng
+feishu_url: "https://my.feishu.cn/docx/NvC5dYXOco8X28xnCbScFQXnnng"
 tags:
+  - 博客
   - 飞博虾
-  - 飞书
-  - GitHub Pages
-  - MkDocs
-  - 建站
-description: 不买服务器、不租公网：飞书里写文章，GitHub 托管博客。本文给出可直接照做的步骤与命令。
+description: "不买服务器、不租公网：飞书里写文章，GitHub 托管博客。本文给出可直接照做的步骤与命令。"
+nav: 博客
 ---
 
 如果你也想要「在飞书写随笔，点一下就出现在自己的博客站点」，又**不想自己架公网服务器**，可以用这套组合：
