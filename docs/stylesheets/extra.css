@@ -216,22 +216,101 @@
   border-top: 1px solid rgba(148, 163, 184, 0.28);
 }
 
-/* Sticky top header + tabs */
-.md-header {
+/* Unified single-row header: brand | tabs | actions */
+.dn-unified-header {
   position: sticky;
   top: 0;
   z-index: 4;
 }
 
-.md-tabs {
-  position: sticky;
-  top: var(--md-header-height, 2.4rem);
-  z-index: 3;
-  background-color: var(--md-primary-fg-color--light, var(--md-default-bg-color));
+.dn-unified-header .dn-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 100%;
 }
 
-[data-md-color-scheme="slate"] .md-tabs {
-  background-color: var(--md-primary-fg-color--dark, var(--md-default-bg-color));
+.dn-header__brand {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.dn-header__brand .md-header__title {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.dn-header__nav {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.dn-header__nav .md-tabs {
+  position: static;
+  top: auto;
+  z-index: auto;
+  width: 100%;
+  background: transparent;
+  box-shadow: none;
+}
+
+.dn-header__nav .md-grid {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.dn-header__nav .md-tabs__list {
+  justify-content: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.dn-header__nav .md-tabs__list::-webkit-scrollbar {
+  display: none;
+}
+
+.dn-header__nav .md-tabs__link {
+  opacity: 0.82;
+  padding-left: 0.65rem;
+  padding-right: 0.65rem;
+  white-space: nowrap;
+}
+
+.dn-header__nav .md-tabs__item--active .md-tabs__link {
+  opacity: 1;
+}
+
+.dn-header__actions {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.dn-header__actions .md-header__source {
+  margin-left: 0;
+}
+
+/* Hide in-header tabs on small screens (drawer nav remains) */
+@media screen and (max-width: 76.1875em) {
+  .dn-header__nav {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 59.9375em) {
+  .dn-header__brand .md-header__title {
+    max-width: 10rem;
+  }
 }
 
 /* Sidebar injected article links */
