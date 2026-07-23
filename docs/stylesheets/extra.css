@@ -216,37 +216,45 @@
   border-top: 1px solid rgba(148, 163, 184, 0.28);
 }
 
-/* Tag filters */
-.dn-tag-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0 0 1.25rem;
+/* Sticky top header + tabs */
+.md-header {
+  position: sticky;
+  top: 0;
+  z-index: 4;
 }
-.dn-load-hint {
-  margin: 0.75rem 0 0;
-  font-size: 0.88rem;
-  color: var(--dn-muted);
-  line-height: 1.55;
+
+.md-tabs {
+  position: sticky;
+  top: var(--md-header-height, 2.4rem);
+  z-index: 3;
+  background-color: var(--md-primary-fg-color--light, var(--md-default-bg-color));
 }
-.dn-nav-posts-block > .md-nav__link {
-  font-weight: 700;
+
+[data-md-color-scheme="slate"] .md-tabs {
+  background-color: var(--md-primary-fg-color--dark, var(--md-default-bg-color));
 }
-.dn-tag-chip {
-  border: 1px solid rgba(148, 163, 184, 0.45);
-  background: var(--dn-card);
-  color: var(--dn-ink);
-  border-radius: 999px;
-  padding: 0.35rem 0.85rem;
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+
+/* Sidebar injected article links */
+.dn-nav-post-item {
+  border-top: 1px dashed rgba(148, 163, 184, 0.22);
 }
-.dn-tag-chip.on,
-.dn-tag-chip:hover {
-  border-color: var(--dn-accent);
-  background: color-mix(in srgb, var(--dn-accent) 12%, transparent);
+
+.dn-nav-post-item:first-of-type {
+  margin-top: 0.35rem;
+  padding-top: 0.25rem;
+}
+
+.dn-nav-post-link {
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
+.dn-nav-post-title {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  line-height: 1.45;
+  word-break: break-word;
 }
 
 /* Post cards */

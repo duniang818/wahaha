@@ -81,62 +81,53 @@
     return root || null;
   }
 
-  function renderSidebar(navLabel, posts) {
-    var listRoot = findSidebarList();
-    if (!listRoot || !navLabel) return;
-
-    var old = document.getElementById("dn-nav-posts-block");
-    if (old) old.remove();
-
-    if (!posts.length) return;
-
-    var wrap = document.createElement("li");
-    wrap.id = "dn-nav-posts-block";
-    wrap.className = "md-nav__item md-nav__item--nested md-nav__item--active dn-nav-posts-block";
-
-    var toggleId = "__nav_dn_posts";
-    var items = posts
-      .map(function (p) {
-        var href = resolveUrl(p.url);
-        var active = location.pathname.replace(/\/+$/, "") === href.replace(/\/+$/, "");
-        return (
-          '<li class="md-nav__item' +
-          (active ? " md-nav__item--active" : "") +
-          '">' +
-          '<a href="' +
-          esc(href) +
-          '" class="md-nav__link">' +
-          '<span class="md-ellipsis">' +
-          esc(p.title) +
-          "</span></a></li>"
-        );
-      })
-      .join("");
-
-    wrap.innerHTML =
-      '<input class="md-nav__toggle" type="checkbox" id="' +
-      toggleId +
-      '" checked>' +
-      '<label class="md-nav__link" for="' +
-      toggleId +
-      '">' +
-      esc(navLabel) +
-      " 文章 (" +
-      posts.length +
-      ")</label>" +
-      '<nav class="md-nav" data-md-component="collapsible">' +
-      '<ul class="md-nav__list">' +
-      items +
-      "</ul></nav>";
-
-    listRoot.insertBefore(wrap, listRoot.firstChild);
-    sidebarNav = navLabel;
+  function findSectionList(navLabel) {
+    var root = findSidebarList();
+    if (!root) return null;
+    var items = root.children;
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var labelEl = item.querySelector(":scope > label.md-nav__link, :scope > a.md-nav__link");
+      if (!labelEl) continue;
+      var text = labelEl.textContent.trim();
+      if (text === navLabel) {
+        var nested = item.querySelector(":scope > .md-nav > .md-nav__list");
+        if (nested) return nested;
+      }
+    }
+    return null;
   }
 
   function clearSidebar() {
-    var old = document.getElementById("dn-nav-posts-block");
-    if (old) old.remove();
+    document.querySelectorAll(".dn-nav-post-item").forEach(function (el) {
+      el.remove();
+    });
     sidebarNav = null;
+  }
+
+  function renderSidebar(navLabel, posts) {
+    clearSidebar();
+    if (!navLabel || !posts.length) return;
+
+    var sectionList = findSectionList(navLabel);
+    if (!sectionList) return;
+
+    posts.forEach(function (p) {
+      var href = resolveUrl(p.url);
+      var active = location.pathname.replace(/\/+$/, "") === href.replace(/\/+$/, "");
+      var li = document.createElement("li");
+      li.className = "md-nav__item dn-nav-post-item" + (active ? " md-nav__item--active" : "");
+      li.innerHTML =
+        '<a href="' +
+        esc(href) +
+        '" class="md-nav__link dn-nav-post-link">' +
+        '<span class="dn-nav-post-title">' +
+        esc(p.title) +
+        "</span></a>";
+      sectionList.appendChild(li);
+    });
+
+    sidebarNav = navLabel;
   }
 
   function loadAndRenderSidebar(navLabel) {
