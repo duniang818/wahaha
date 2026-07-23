@@ -15,9 +15,35 @@ import {
   markdownFromFeishu,
   buildPostMarkdown,
   extractDocToken,
+  mirrorImagesInMarkdown,
+  excerptFromBody,
+  fetchDocBlocksMarkdown,
 } from "./lib/feishu-doc.js";
 import { normalizeNavDir } from "./lib/publish.js";
 import { ROOT } from "./lib/tenant.js";
+
+/** 栏目 → 默认标签（与小组件 NAV_META 一致） */
+const NAV_TAG_DEFAULT = {
+  "blog/posts": "博客,飞博虾",
+  education: "教育,飞博虾",
+  travel: "旅行,飞博虾",
+  tech: "技术,飞博虾",
+  life: "生活,飞博虾",
+};
+
+function resolveTags(payload, navDir) {
+  const raw = String(payload.tags || "").trim();
+  if (raw) {
+    return raw
+      .split(/[,，]/)
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+  return String(NAV_TAG_DEFAULT[navDir] || "飞博虾")
+    .split(/[,，]/)
+    .map(s => s.trim())
+    .filter(Boolean);
+}
 
 function loadPayload() {
   if (process.env.CLIENT_PAYLOAD) {
@@ -250,7 +276,13 @@ async function upsertLedger(token, payload, extra = {}) {
     slug,
     写入目录: navDir,
     状态: status,
-    标签: "飞博虾,文档发布",
+    标签:
+      String(payload.tags || "")
+        .split(/[,，]/)
+        .map(s => s.trim())
+        .filter(Boolean)
+        .join(",") ||
+      (NAV_TAG_DEFAULT[navDir] || "飞博虾"),
     备注: `来自文档内飞博虾 · ${action} · ${platforms.join("+")} · ${new Date().toISOString()}${
       payload.notes ? ` · ${payload.notes}` : ""
     }${wrote || unpublished ? "" : " · 正文未写入（请分享文档给应用或本机 ship）"}`,
@@ -329,15 +361,24 @@ async function writeLocalMarkdown(payload, token) {
   let docId = payload.doc_token || extractDocToken(payload.doc_url || "") || "";
 
   const errors = [];
+  const docsRoot = path.join(ROOT, "docs");
+
+  // 1) OpenAPI Blocks（含图片下载，CI 可用）
   if (token) {
     try {
-      const fetched = await fetchDocViaOpenApi(token, payload.doc_url);
+      const fetched = await fetchDocBlocksMarkdown(token, payload.doc_url, {
+        slug,
+        navDir,
+        docsRoot,
+      });
       content = fetched.content;
       docId = fetched.docId || docId;
     } catch (e) {
-      errors.push(`OpenAPI: ${e.message || e}`);
+      errors.push(`blocks: ${e.message || e}`);
     }
   }
+
+  // 2) lark-cli markdown
   if (!content) {
     try {
       const fetched = fetchFeishuMarkdown(payload.doc_url);
@@ -345,6 +386,17 @@ async function writeLocalMarkdown(payload, token) {
       docId = fetched.docId || docId;
     } catch (e) {
       errors.push(`lark-cli: ${e.message || e}`);
+    }
+  }
+
+  // 3) OpenAPI raw_content 纯文本兜底
+  if (!content && token) {
+    try {
+      const fetched = await fetchDocViaOpenApi(token, payload.doc_url);
+      content = fetched.content;
+      docId = fetched.docId || docId;
+    } catch (e) {
+      errors.push(`raw: ${e.message || e}`);
     }
   }
   if (!content) {
@@ -357,16 +409,29 @@ async function writeLocalMarkdown(payload, token) {
 
   const parsed = markdownFromFeishu(content);
   const title = payload.title || parsed.title || "未命名";
+  const tagList = resolveTags(payload, navDir);
+  let body = parsed.body;
+  try {
+    body = await mirrorImagesInMarkdown(body, {
+      slug,
+      navDir,
+      token,
+      docsRoot,
+    });
+  } catch (e) {
+    console.warn("图片镜像部分失败:", e.message || e);
+  }
   const built = buildPostMarkdown({
     title,
-    body: parsed.body,
+    body,
     slug,
-    tags: ["飞博虾", "文档发布"],
+    tags: tagList,
     docId,
     docUrl: payload.doc_url,
     navDir,
     platforms: String(payload.platforms || "blog,wechat,xhs,csdn,zhihu").split(","),
     draft: false,
+    description: excerptFromBody(body),
   });
   const out = path.join(ROOT, "docs", built.rel);
   fs.mkdirSync(path.dirname(out), { recursive: true });

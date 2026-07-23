@@ -1,0 +1,266 @@
+{
+  "generatedAt": "2026-07-23T02:30:47.523Z",
+  "navTags": [
+    "博客",
+    "教育",
+    "旅行",
+    "技术",
+    "飞博虾",
+    "其他"
+  ],
+  "posts": [
+    {
+      "title": "用飞书写作 + GitHub Pages 建个人博客（可复制实操）",
+      "url": "/blog/posts/feishu-github-blog-guide/",
+      "date": "2026-07-22",
+      "nav": "博客",
+      "tags": [
+        "博客",
+        "飞书",
+        "GitHub Pages",
+        "MkDocs",
+        "建站"
+      ],
+      "excerpt": "不买服务器、不租公网：飞书里写文章，GitHub 托管博客。本文给出可直接照做的步骤与命令。",
+      "thumb": ""
+    },
+    {
+      "title": "飞书一键发布测试",
+      "url": "/blog/posts/feishu-oneclick-test/",
+      "date": "2026-07-22",
+      "nav": "博客",
+      "tags": [
+        "博客",
+        "测试"
+      ],
+      "excerpt": "由飞博虾一键发布",
+      "thumb": ""
+    },
+    {
+      "title": "欢迎来到渡娘的空间",
+      "url": "/blog/posts/welcome/",
+      "date": "2026-07-22",
+      "nav": "博客",
+      "tags": [
+        "博客",
+        "公告"
+      ],
+      "excerpt": "站点说明：公开浏览与评论、作者本机一键多平台发布。",
+      "thumb": ""
+    },
+    {
+      "title": "Untitled",
+      "url": "/blog/posts/01 firstblog/",
+      "date": "2024-06-03",
+      "nav": "博客",
+      "tags": [
+        "博客",
+        "工具",
+        "分析",
+        "汽车",
+        "首页",
+        "编程"
+      ],
+      "excerpt": "",
+      "thumb": ""
+    },
+    {
+      "title": "about",
+      "url": "/about/",
+      "date": "",
+      "nav": "其他",
+      "tags": [
+        "其他"
+      ],
+      "excerpt": "关于 <aside class=\"dnauthor\" markdown=\"0\" <div class=\"dnauthoravatar\"渡</div <div <strong渡娘</strong <span写字、旅行、折腾工具｜公开站可浏览评论，发布仅作者本机</span </di…",
+      "thumb": ""
+    },
+    {
+      "title": "0 Xset 4.0.0在Windows上源码部署",
+      "url": "/analysis/0 Xset 4.0.0在Windows上源码部署/",
+      "date": "",
+      "nav": "其他",
+      "tags": [
+        "其他"
+      ],
+      "excerpt": "1 安装python==3.11.5版本 2 vscode配置python解释器 下载vscode python插件， 并选择从vsix安装： 到此应该是配置好python环境了，如果是在terminal中输入python，可以确认现在的路径是否是刚才安装的路径。如果还不能运行p…",
+      "thumb": "analysis/images/0Xset4.0.0在Windows上源码部署/1717492581936.png"
+    },
+    {
+      "title": "211",
+      "url": "/education/211/",
+      "date": "",
+      "nav": "教育",
+      "tags": [
+        "教育"
+      ],
+      "excerpt": "211 大学（按城市） 上海 | 校名 | 类型 | | | | | 华东理工大学 | 理工 | | 东华大学 | 理工 | | 上海财经大学 | 财经 | | 上海外国语大学 | 语言 | | 上海大学 | 综合 | 北京 | 校名 | 类型 | | | | | 北京科技大学 …",
+      "thumb": ""
+    },
+    {
+      "title": "985",
+      "url": "/education/985/",
+      "date": "",
+      "nav": "教育",
+      "tags": [
+        "教育"
+      ],
+      "excerpt": "985 大学（按城市） 共涉及 20 个城市。 上海 | 校名 | 类型 | 全国参考排名 | 建校 | | | | | | | 复旦大学 | 综合 | 3 | 1905 | | 上海交通大学 | 综合 | 5 | 1896 | | 同济大学 | 理工 | 12 | 1907 |…",
+      "thumb": ""
+    },
+    {
+      "title": "world-universities",
+      "url": "/education/world-universities/",
+      "date": "",
+      "nav": "教育",
+      "tags": [
+        "教育"
+      ],
+      "excerpt": "世界名校速览 基于资料库中的 QS 相关整理（供个人查阅，排名以官方为准）。 | 排名 | 中文名 | 英文名 | 国家/地区 | 简介 | | | | | | | | 1 | 麻省理工学院 | Massachusetts Institute of Technology (MIT…",
+      "thumb": ""
+    },
+    {
+      "title": "analytics-setup",
+      "url": "/feiboxia/analytics-setup/",
+      "date": "",
+      "nav": "飞博虾",
+      "tags": [
+        "飞博虾"
+      ],
+      "excerpt": "博客访问统计说明 每篇博文自动统计（已启用） 仓库已接入 不蒜子 访问统计（国内可访问性更好）： 页脚显示「本站 PV」 文章正文底部显示「本文阅读」（本页 PV） 脚本加载失败时会显示「统计中」占位 脚本：docs/javascripts/visitorbadge.js 样式：…",
+      "thumb": ""
+    },
+    {
+      "title": "local-publish-test",
+      "url": "/feiboxia/local-publish-test/",
+      "date": "",
+      "nav": "飞博虾",
+      "tags": [
+        "飞博虾"
+      ],
+      "excerpt": "本机测试：飞书带图重新发布 前提 1. 飞书开放平台应用凭证（与 GitHub Actions 相同）： FEISHUAPPID FEISHUAPPSECRET 2. 测试文档已分享给该应用（或应用有文档读取权限） 3. 应用权限包含 docs:document.media:do…",
+      "thumb": "feiboxia/assets/<slug>/img-01.png"
+    },
+    {
+      "title": "blog-assistant",
+      "url": "/tech/blog-assistant/",
+      "date": "",
+      "nav": "技术",
+      "tags": [
+        "技术"
+      ],
+      "excerpt": "终端博客助手 powershell cd D:\\myblog npm run blog 飞书优先。完整说明见 飞书写作 → 一键发布。 菜单 | 键 | 功能 | ||| | S | 飞书配置 / 登录（首次必做） | | 1 | 飞书文档 → 博客（可推送） | | 2 | 创…",
+      "thumb": ""
+    },
+    {
+      "title": "feiboxia",
+      "url": "/tech/feiboxia/",
+      "date": "",
+      "nav": "技术",
+      "tags": [
+        "技术"
+      ],
+      "excerpt": "飞博虾 飞书里写、GitHub 上发。不需要自有公网。 产品结构 | 台 | 在哪 | 干什么 | |||| | 写作台 | 飞书云文档 | 编辑与预览 | | 稿件箱 | 飞书多维表格台账 | 栏目、定时、状态 | | 工作台壳 | GitHub Pages 工作台 | 一个入…",
+      "thumb": ""
+    },
+    {
+      "title": "feishu-publish",
+      "url": "/tech/feishu-publish/",
+      "date": "",
+      "nav": "技术",
+      "tags": [
+        "技术"
+      ],
+      "excerpt": "飞书写作 → 一键发布博客 为什么以前 2/3/4 不通？ | 功能 | 失败原因 | ||| | 飞书 → 博客 | 本机 larkcli 未配置应用（notconfigured），无法读文档 | | 外站发布 | 微信缺 .env 凭证；小红书/CSDN/知乎官方无完整发文 …",
+      "thumb": ""
+    },
+    {
+      "title": "giscus-setup",
+      "url": "/tech/giscus-setup/",
+      "date": "",
+      "nav": "技术",
+      "tags": [
+        "技术"
+      ],
+      "excerpt": "评论配置 界面说明 文章底部评论区默认展示： 游客（默认）：顶部表情墙 + Markdown 富文本编辑器 + 昵称 + 发布 GitHub 账号：切换到 Giscus（含表情墙、输入/预览、GitHub 登录），与线上一致 无需先注册第三方服务即可在本地看到完整评论框。 Git…",
+      "thumb": ""
+    },
+    {
+      "title": "如何利用Mkdocs+Material+GithubPages搭建个人博客",
+      "url": "/tools/如何利用Mkdocs+Material+GithubPages搭建个人博客/",
+      "date": "",
+      "nav": "其他",
+      "tags": [
+        "其他"
+      ],
+      "excerpt": "1 如何利用Mkdocs+Material+GithubPages搭建个人博客 在网上看见别人发表自己的文章，是不是非常羡慕，不仅撰写的内容非常的高质量，吸引人，而且他们的博客系统非常的美观且使用方便流畅？那么你是否也想时不时分享一些属于自己的内容给其他人呢？获得一丝丝的点赞和反…",
+      "thumb": "tools/tools/images/如何利用Mkdocs+Material+GithubPages搭建个人博客/1717481980941.png"
+    },
+    {
+      "title": "配置mkdocs",
+      "url": "/tools/配置mkdocs/",
+      "date": "",
+      "nav": "其他",
+      "tags": [
+        "其他"
+      ],
+      "excerpt": "1 每日一句 [!quote] There is no greater harm than that of time wasted. — Michelangelo 2 文章主旨 [X] 附件如何存放附件， 且在当前目录下设置附件目录 obsidian工具 ✅ 20240604 […",
+      "thumb": "tools/images/配置mkdocs/1717488132925.png"
+    },
+    {
+      "title": "attractions-5a",
+      "url": "/travel/attractions-5a/",
+      "date": "",
+      "nav": "旅行",
+      "tags": [
+        "旅行"
+      ],
+      "excerpt": "全国 5A 景区（按城市） 覆盖 37 个城市条目。 三亚 | 景区 | 类型 | 门票 | 简介 | | | | | | | 南山文化旅游区 | 历史文化 | 129元/人 | 南海观音，佛教文化圣地 | | 大小洞天旅游区 | 自然风光 | 90元/人 | 道教文化圣地，海山…",
+      "thumb": ""
+    },
+    {
+      "title": "city-culture",
+      "url": "/travel/city-culture/",
+      "date": "",
+      "nav": "旅行",
+      "tags": [
+        "旅行"
+      ],
+      "excerpt": "城市人文风俗 三亚 [object Object] 上海 [object Object] 北京 [object Object] 广州 [object Object] 成都 [object Object] 杭州 [object Object] 西安 [object Object]",
+      "thumb": ""
+    },
+    {
+      "title": "city-food",
+      "url": "/travel/city-food/",
+      "date": "",
+      "nav": "旅行",
+      "tags": [
+        "旅行"
+      ],
+      "excerpt": "城市美食 三亚 | 美食/餐厅 | 说明 | | | | | 海鲜 | 新鲜海产，品种丰富 | | 椰子鸡 | 海南特色，清甜鲜美 | | 清补凉 | 海南甜品，清凉解暑 | | 文昌鸡 | 海南名菜，肉质鲜嫩 | | 和乐蟹 | 海南特产，蟹黄饱满 | 上海 | 美食/餐厅 |…",
+      "thumb": ""
+    },
+    {
+      "title": "ethnic-groups",
+      "url": "/travel/ethnic-groups/",
+      "date": "",
+      "nav": "旅行",
+      "tags": [
+        "旅行"
+      ],
+      "excerpt": "民族概览 待补充。",
+      "thumb": ""
+    },
+    {
+      "title": "museums",
+      "url": "/travel/museums/",
+      "date": "",
+      "nav": "旅行",
+      "tags": [
+        "旅行"
+      ],
+      "excerpt": "博物馆精选 上海 | 名称 | 门票/开放 | 备注 | | | | | | 上海博物馆 | 免费 | 中国古代艺术博物馆 | | 上海自然博物馆 | 30元/人 | 自然历史博物馆 | | 上海科技馆 | 45元/人 | 大型科普教育基地 | | 中共一大会址纪念馆 | 免费 …",
+      "thumb": ""
+    }
+  ]
+}

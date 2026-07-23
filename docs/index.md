@@ -1,42 +1,24 @@
 # 渡娘的空间
 
+博客文章列表在**首页**浏览；点进文章后为**左导航 · 中详情 · 右目录**三栏布局。
+
 <div class="dn-hero" markdown="0">
   <h1>渡娘的空间</h1>
-  <p>教育 · 旅行 · 技术 · 生活。本地 Markdown 写作，一键发布到博客与多平台。</p>
-  <div class="dn-hero-actions">
-    <a class="dn-btn dn-btn-primary" href="feiboxia/">飞博虾工作台</a>
-    <a class="dn-btn dn-btn-ghost" href="education/">看名校资料</a>
-    <a class="dn-btn dn-btn-ghost" href="travel/">规划旅行</a>
-  </div>
+  <p>教育 · 旅行 · 技术 · 生活 — 按标签筛选最新文章</p>
 </div>
 
-## 内容分区
+## 标签筛选
 
-<div class="dn-grid" markdown="0">
-  <a class="dn-card" href="education/">
-    <span class="dn-kicker">Education</span>
-    <h3>教育 · 名校</h3>
-    <p>世界名校速览、985 / 211 按城市查阅，升学与出行联动。</p>
-  </a>
-  <a class="dn-card" href="travel/">
-    <span class="dn-kicker">Travel</span>
-    <h3>旅行 · 出行</h3>
-    <p>5A 景区、博物馆、美食与人文风俗，手机也能快速检索。</p>
-  </a>
-  <a class="dn-card" href="tech/">
-    <span class="dn-kicker">Tech</span>
-    <h3>技术笔记</h3>
-    <p>MkDocs、Obsidian、数据分析与工程实践沉淀。</p>
-  </a>
-  <a class="dn-card" href="life/">
-    <span class="dn-kicker">Life</span>
-    <h3>生活随笔</h3>
-    <p>日常记录、汽车与待办，支持评论交流。</p>
-  </a>
+<div id="dn-tag-filters" class="dn-tag-filters" markdown="0"></div>
+
+<div id="dn-carousels" class="dn-carousels" markdown="0"></div>
+
+## 最新文章
+
+<div id="dn-post-grid" class="dn-post-grid" markdown="0">
+  <p class="dn-empty">正在加载文章列表…</p>
 </div>
 
-## 最近写作
+<p id="dn-load-hint" class="dn-load-hint" hidden markdown="0"></p>
 
-在 `docs/blog/posts/` 新建 Markdown，或直接编辑各分区页面。公开内容推送后自动上线；私密稿放在 `docs/private/`（仅本机）。
-
-[关于本站与社交账号 →](about.md)
+[关于本站 →](about.md)

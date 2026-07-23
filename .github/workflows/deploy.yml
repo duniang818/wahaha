@@ -25,11 +25,17 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Build site
-        run: mkdocs build
+        run: |
+          node scripts/build-posts-index.mjs
+          mkdocs build
 
       - name: Add .nojekyll
         run: touch site/.nojekyll
