@@ -43,8 +43,10 @@ body {
 .shell.collapsed.bar-mode {
   display: flex;
   align-items: center;
-  background: transparent;
+  background: linear-gradient(90deg, #2a151c, #1a0f12);
   cursor: pointer;
+  border-radius: 8px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
 }
 
 .host-strip {

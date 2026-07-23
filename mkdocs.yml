@@ -111,6 +111,8 @@ extra:
 
 nav:
   - 首页: index.md
+  - 博客:
+      - blog/posts/welcome.md
   - 飞博虾:
       - feiboxia/index.md
   - 教育:

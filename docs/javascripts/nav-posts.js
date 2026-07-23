@@ -1,6 +1,7 @@
 (function () {
   var PATH_TO_NAV = {
     "blog/posts": "博客",
+    blog: "博客",
     education: "教育",
     travel: "旅行",
     tech: "技术",
@@ -53,9 +54,13 @@
     var path = location.pathname;
     if (base && path.indexOf(base) === 0) path = path.slice(base.length);
     path = path.replace(/^\/+|\/+$/g, "");
-    if (!path || path === "index.html") return "";
+    if (!path || path === "index.html" || path === "index") return "";
+
+    if (path.indexOf("blog/posts") === 0 || path.indexOf("blog/posts/") === 0) return "博客";
+    if (path.split("/")[0] === "blog") return "博客";
+
     var top = path.split("/")[0];
-    return PATH_TO_NAV[top] || "";
+    return PATH_TO_NAV[top] || PATH_TO_NAV[path.split("/").slice(0, 2).join("/")] || "";
   }
 
   function fetchFull() {
@@ -81,21 +86,62 @@
     return root || null;
   }
 
-  function findSectionList(navLabel) {
+  function findSectionItem(navLabel) {
     var root = findSidebarList();
     if (!root) return null;
     var items = root.children;
     for (var i = 0; i < items.length; i++) {
       var item = items[i];
-      var labelEl = item.querySelector(":scope > label.md-nav__link, :scope > a.md-nav__link");
+      var labelEl = item.querySelector(
+        ":scope > label.md-nav__link, :scope > a.md-nav__link, :scope > .md-nav__link.md-nav__container a.md-nav__link"
+      );
       if (!labelEl) continue;
-      var text = labelEl.textContent.trim();
-      if (text === navLabel) {
-        var nested = item.querySelector(":scope > .md-nav > .md-nav__list");
-        if (nested) return nested;
-      }
+      if (labelEl.textContent.trim() === navLabel) return item;
     }
     return null;
+  }
+
+  function findSectionList(navLabel) {
+    var item = findSectionItem(navLabel);
+    if (!item) return null;
+    var nested = item.querySelector(":scope > .md-nav > .md-nav__list");
+    if (nested) return nested;
+    nested = item.querySelector(":scope > .md-nav__link.md-nav__container + nav .md-nav__list");
+    return nested || null;
+  }
+
+  function expandSection(navLabel) {
+    var item = findSectionItem(navLabel);
+    if (!item) return;
+    var toggle = item.querySelector(":scope > input.md-nav__toggle");
+    if (toggle) {
+      toggle.checked = true;
+      toggle.classList.remove("md-toggle--indeterminate");
+    }
+    var nav = item.querySelector(":scope > nav.md-nav");
+    if (nav) nav.setAttribute("aria-expanded", "true");
+  }
+
+  function ensureBlogSection() {
+    var existing = findSectionList("博客");
+    if (existing) return existing;
+
+    var root = findSidebarList();
+    if (!root) return null;
+
+    var li = document.createElement("li");
+    li.className = "md-nav__item md-nav__item--nested md-nav__item--active dn-nav-blog-section";
+    li.innerHTML =
+      '<input class="md-nav__toggle md-toggle" type="checkbox" id="__dn_nav_blog" checked>' +
+      '<label class="md-nav__link" for="__dn_nav_blog">博客</label>' +
+      '<nav class="md-nav" aria-label="博客" data-md-level="1">' +
+      '<ul class="md-nav__list" data-md-scrollfix></ul></nav>';
+
+    var home = root.querySelector(":scope > .md-nav__item");
+    if (home && home.nextSibling) root.insertBefore(li, home.nextSibling);
+    else root.appendChild(li);
+
+    return li.querySelector(".md-nav__list");
   }
 
   function clearSidebar() {
@@ -109,8 +155,10 @@
     clearSidebar();
     if (!navLabel || !posts.length) return;
 
-    var sectionList = findSectionList(navLabel);
+    var sectionList = navLabel === "博客" ? ensureBlogSection() : findSectionList(navLabel);
     if (!sectionList) return;
+
+    expandSection(navLabel);
 
     posts.forEach(function (p) {
       var href = resolveUrl(p.url);

@@ -77,6 +77,11 @@ async function setHostSize(w: number, h: number) {
   } catch {
     /* ignore */
   }
+  try {
+    await bridge?.updateHeight?.(h);
+  } catch {
+    /* ignore */
+  }
 }
 
 /** 宿主 resize 有时首帧不生效，短延迟重试 */
@@ -335,9 +340,9 @@ export function App() {
   const [tagsText, setTagsText] = useState(() => tagsForNav("blog/posts").join(","));
   const [newNav, setNewNav] = useState("");
   const [editingNav, setEditingNav] = useState(false);
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
   const busyRef = useRef(false);
-  const collapsedRef = useRef(true);
+  const collapsedRef = useRef(false);
   const pinOpen = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -428,10 +433,10 @@ export function App() {
 
   useEffect(() => {
     (async () => {
-      document.documentElement.dataset.feiboxia = "collapsed";
+      document.documentElement.dataset.feiboxia = "expanded";
       await notifyReady();
       await ensureHostVisible();
-      await setHostSizeReliable(BAR_SIZE.w, BAR_SIZE.h);
+      await setHostSizeReliable(PANEL_SIZE.w, PANEL_SIZE.h);
       setReady(true);
 
       try {
@@ -468,11 +473,11 @@ export function App() {
         setTagsText(tagsForNav(startNav).join(","));
 
         await refreshStatus(merged, startNav, s);
-        await setHostSizeReliable(BAR_SIZE.w, BAR_SIZE.h);
+        await setHostSizeReliable(PANEL_SIZE.w, PANEL_SIZE.h);
       } catch (e: any) {
         setMsg(`初始化失败：${e?.message || e}`);
         await notifyReady();
-        await setHostSizeReliable(BAR_SIZE.w, BAR_SIZE.h);
+        await setHostSizeReliable(PANEL_SIZE.w, PANEL_SIZE.h);
       }
     })();
   }, []);
@@ -752,11 +757,13 @@ export function App() {
       <div
         className="shell collapsed bar-mode"
         ref={rootRef}
-        onClick={expandPanel}
+        onClick={() => void expandPanel()}
+        onMouseEnter={() => void expandPanel()}
+        onPointerEnter={() => void expandPanel()}
         role="button"
         tabIndex={0}
         aria-label="展开飞博虾"
-        title="飞博虾 · 点击展开"
+        title="飞博虾 · 移入或点击展开"
         onKeyDown={e => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
