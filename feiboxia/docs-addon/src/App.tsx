@@ -3,6 +3,7 @@ import { BlockitClient } from "@lark-opdev/block-docs-addon-api";
 
 type Action = "publish" | "republish" | "unpublish";
 type Cmd = "send" | "republish" | "pull" | "revoke";
+type MdImportMode = "overwrite" | "append" | "new";
 type PlatformId = "blog" | "wechat" | "xhs" | "csdn" | "zhihu";
 type PublishStatus = "unknown" | "never" | "published" | "revoked";
 
@@ -258,6 +259,13 @@ function b64ToUtf8(b64: string) {
   }
 }
 
+function utf8ToB64(str: string) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
 function parseOnlinePostUrl(postUrl: string, siteUrl: string) {
   try {
     const u = new URL(postUrl.trim());
@@ -424,6 +432,8 @@ export function App() {
   const [newNav, setNewNav] = useState("");
   const [editingNav, setEditingNav] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [mdImportMode, setMdImportMode] = useState<MdImportMode>("overwrite");
+  const mdFileRef = useRef<HTMLInputElement>(null);
   const busyRef = useRef(false);
   const collapsedRef = useRef(false);
   const pinOpen = useRef(false);
@@ -835,6 +845,47 @@ export function App() {
     }
   }
 
+  async function runMdImport(file: File) {
+    if (!cfg.githubPat?.trim() || !cfg.githubRepo?.trim()) {
+      openSetup();
+      setMsg("请先在「设置」填写 GitHub PAT");
+      return;
+    }
+    if (mdImportMode !== "new" && !docToken) {
+      setMsg("请在飞书文档内打开飞博虾后再导入");
+      return;
+    }
+    setBusy(true);
+    setMsg("正在读取 Markdown…");
+    try {
+      const text = await file.text();
+      if (!text.trim()) throw new Error("文件内容为空");
+      if (text.length > 900_000) {
+        throw new Error("文件过大（>900KB 文本），请拆分后重试");
+      }
+      setMsg("正在上传并转换为飞书正文…");
+      await dispatchGithub("feiboxia-md-import", {
+        mode: mdImportMode,
+        doc_token: docToken,
+        doc_url: docUrl,
+        title: title || file.name.replace(/\.(md|markdown|txt)$/i, ""),
+        markdown_b64: utf8ToB64(text),
+      });
+      const modeLabel =
+        mdImportMode === "new"
+          ? "新建文档"
+          : mdImportMode === "append"
+            ? "追加到文末"
+            : "覆盖当前文档";
+      setMsg(`✓ 已触发 Markdown 导入（${modeLabel}），约 1~3 分钟；完成后刷新文档即可编辑`);
+      if (mdFileRef.current) mdFileRef.current.value = "";
+    } catch (e: any) {
+      setMsg(`失败：${e?.message || e}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function renderCmdBar(extraClass = "") {
     return (
       <div className={`cmd-bar ${extraClass}`.trim()}>
@@ -1223,6 +1274,35 @@ export function App() {
                 Actions
               </button>
             </div>
+
+            <details className="md-import-box">
+              <summary>导入 Markdown → 飞书正文（可编辑）</summary>
+              <p className="hint tiny muted">
+                上传 .md 文件，转为飞书 docx 正文（非附件）。需文档已分享给飞博虾应用。
+              </p>
+              <label>导入方式</label>
+              <select
+                value={mdImportMode}
+                onChange={e => setMdImportMode(e.target.value as MdImportMode)}
+                onFocus={onFocusField}
+                onBlur={onBlurField}
+              >
+                <option value="overwrite">覆盖当前文档正文</option>
+                <option value="append">追加到当前文档末尾</option>
+                <option value="new">新建飞书文档</option>
+              </select>
+              <label>选择 Markdown 文件</label>
+              <input
+                ref={mdFileRef}
+                type="file"
+                accept=".md,.markdown,.txt,text/markdown,text/plain"
+                disabled={busy}
+                onChange={e => {
+                  const f = e.target.files?.[0];
+                  if (f) void runMdImport(f);
+                }}
+              />
+            </details>
           </section>
         )}
 

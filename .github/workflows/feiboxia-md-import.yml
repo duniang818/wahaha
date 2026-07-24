@@ -1,0 +1,45 @@
+name: 飞博虾·Markdown 导入
+
+# 文档内上传 .md → 转为可编辑飞书 docx 正文
+
+on:
+  repository_dispatch:
+    types: [feiboxia-md-import]
+  workflow_dispatch:
+    inputs:
+      payload_json:
+        description: "client_payload JSON"
+        required: false
+        default: "{}"
+
+permissions:
+  contents: read
+
+jobs:
+  md-import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install and configure lark-cli
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+        run: |
+          npm i -g @larksuite/cli
+          if [ -n "$FEISHU_APP_ID" ] && [ -n "$FEISHU_APP_SECRET" ]; then
+            mkdir -p "$HOME/.lark-cli"
+            node -e "const fs=require('fs');const id=process.env.FEISHU_APP_ID;const sec=process.env.FEISHU_APP_SECRET;const p=require('path').join(process.env.HOME,'.lark-cli','config.json');fs.writeFileSync(p,JSON.stringify({appId:id,appSecret:sec,lang:'zh_cn',brand:'feishu',profile:id,profiles:{[id]:{appId:id,appSecret:sec}}},null,2));"
+          fi
+
+      - name: Run markdown import
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_NOTIFY_OPEN_ID: ${{ secrets.FEISHU_NOTIFY_OPEN_ID }}
+          CLIENT_PAYLOAD: ${{ github.event_name == 'repository_dispatch' && toJson(github.event.client_payload) || inputs.payload_json }}
+        run: node feiboxia/ci-md-import.mjs

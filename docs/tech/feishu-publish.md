@@ -121,6 +121,22 @@ npm run blog   # 选 3 从台账一键发布
 
 手动测试：GitHub Actions →「飞博虾·晚间重试」→ Run workflow。
 
+### Markdown → 飞书正文（可编辑）
+
+在飞书文档侧边栏飞博虾展开 **「导入 Markdown → 飞书正文」**：
+
+| 模式 | 说明 |
+|------|------|
+| 覆盖当前文档 | 用 .md 替换本篇正文，飞书里直接改 |
+| 追加到文末 | 在现有内容后追加 |
+| 新建飞书文档 | 在云空间新建 docx（非附件） |
+
+需 GitHub PAT（`workflow` 权限）触发 [飞博虾·Markdown 导入](https://github.com/duniang818/wahaha/actions/workflows/feiboxia-md-import.yml)；应用需有文档 **编辑** 权限（分享文档给飞博虾）。
+
+### 关于「国内加速」与 git push
+
+博客站的国内加速（`fonts.loli.net`、`gcore.jsdelivr.net`）只加快 **访客打开 Pages 时** 加载字体/评论编辑器脚本，与 **git push 到 github.com** 无关。Push 走 Git 协议直连 GitHub，在国内仍可能超时，可尝试：VPN/代理、`git config http.proxy …`、或换网络时段重试。
+
 ## 作者管理（仅作者可操作）
 
 公开博客是静态站，**访客无法在网页上删改文章**。只有持有 GitHub PAT 的作者，才能通过 **飞书飞博虾小组件** 或 **本机命令** 管理博文。
