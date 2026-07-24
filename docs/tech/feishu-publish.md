@@ -94,6 +94,32 @@ npm run blog   # 选 3 从台账一键发布
 - `feiboxia/lib/post-manage.js` — 作者移动/改标签/删除
 - `scripts/manage-post.mjs` — 本机 CLI
 - `.github/workflows/feiboxia-doc-manage.yml` — 飞博虾触发 Actions
+- `sync/publish-retry-queue.json` — 发布失败晚间重试队列
+- `.github/workflows/feiboxia-doc-retry.yml` — 每晚 21:00 自动重试
+
+## 晚间自动重试 + 飞书通知
+
+文档内飞博虾点击「发送 / 重新发送」后，若 CI 未能写入正文（网络、文档未分享给应用等），会自动加入 **晚间重试队列**，在北京时间 **21:00** 再执行一次。
+
+- 重试 **成功或失败** 都会给作者发一条飞书私聊
+- 若仍失败，会安排 **下一晚 21:00** 继续重试，直至成功
+- 队列文件：`sync/publish-retry-queue.json`
+
+### 一次性配置（GitHub Secrets）
+
+在仓库 Settings → Secrets 增加：
+
+| Secret | 说明 |
+|--------|------|
+| `FEISHU_NOTIFY_OPEN_ID` | 接收通知的飞书用户 open_id |
+
+获取 open_id：`lark-cli contact resolve --name "你的姓名"` 或飞书开放平台调试工具。
+
+应用需开通 **发送消息**（`im:message`）权限，且机器人能向该用户发消息。
+
+可选环境变量 `FEIBOXIA_RETRY_HOUR`（默认 `21`）可调整重试小时（北京时间）。
+
+手动测试：GitHub Actions →「飞博虾·晚间重试」→ Run workflow。
 
 ## 作者管理（仅作者可操作）
 

@@ -813,7 +813,7 @@ export function App() {
       setStatus("published");
       setLinkedToDoc(true);
       setStatusDetail("已触发 Actions，等待写入正文并部署");
-      setMsg(`✓ 已触发${labels[cmd]}，约 1~5 分钟生效；若仍 404 请检查 Actions 是否「正文已写入」`);
+      setMsg(`✓ 已触发${labels[cmd]}，约 1~5 分钟生效；若失败将于今晚 21:00 自动重试并飞书通知`);
 
       await persistInteraction({
         feiboxiaCfg: cfg,

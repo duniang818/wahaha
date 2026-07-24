@@ -1,0 +1,62 @@
+name: 飞博虾·晚间重试
+
+# 北京时间 21:00 重试发布失败的任务，并飞书通知作者
+on:
+  schedule:
+    - cron: "0 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  evening-retry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install and configure lark-cli
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+        run: |
+          npm i -g @larksuite/cli
+          if [ -n "$FEISHU_APP_ID" ] && [ -n "$FEISHU_APP_SECRET" ]; then
+            mkdir -p "$HOME/.lark-cli"
+            node -e "const fs=require('fs');const id=process.env.FEISHU_APP_ID;const sec=process.env.FEISHU_APP_SECRET;const p=require('path').join(process.env.HOME,'.lark-cli','config.json');fs.writeFileSync(p,JSON.stringify({appId:id,appSecret:sec,lang:'zh_cn',brand:'feishu',profile:id,profiles:{[id]:{appId:id,appSecret:sec}}},null,2));"
+          fi
+
+      - name: Run evening retry
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_NOTIFY_OPEN_ID: ${{ secrets.FEISHU_NOTIFY_OPEN_ID }}
+          SITE_URL: https://duniang818.github.io/wahaha/
+        run: node feiboxia/ci-doc-retry.mjs
+
+      - name: Commit docs if changed
+        run: |
+          if git diff --quiet docs sync/feishu-map.json 2>/dev/null && git diff --cached --quiet docs sync/feishu-map.json 2>/dev/null; then
+            echo "No doc file changes — skip commit"
+          else
+            node scripts/build-posts-index.mjs
+            git config user.name "feiboxia-bot"
+            git config user.email "feiboxia@users.noreply.github.com"
+            git add docs sync/feishu-map.json docs/javascripts/posts-index.json docs/javascripts/posts-index-preview.json
+            git commit -m "docs: 飞博虾晚间重试发布"
+            git push
+          fi
+
+      - name: Commit retry queue
+        run: |
+          git config user.name "feiboxia-bot"
+          git config user.email "feiboxia@users.noreply.github.com"
+          git add sync/publish-retry-queue.json feiboxia/queue/doc-retry.last.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: 更新发布重试队列"
+            git push
+          fi

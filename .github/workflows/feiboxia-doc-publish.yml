@@ -49,13 +49,27 @@ jobs:
           fi
 
       - name: Run feiboxia doc publish
+        id: publish
+        continue-on-error: true
         env:
           FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
           FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
           CLIENT_PAYLOAD: ${{ github.event_name == 'repository_dispatch' && toJson(github.event.client_payload) || inputs.payload_json }}
         run: node feiboxia/ci-doc-publish.mjs
 
+      - name: Commit retry queue
+        if: always()
+        run: |
+          git config user.name "feiboxia-bot"
+          git config user.email "feiboxia@users.noreply.github.com"
+          git add sync/publish-retry-queue.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: 更新发布重试队列"
+            git push
+          fi
+
       - name: Commit docs if changed
+        if: steps.publish.outcome == 'success'
         run: |
           if git diff --quiet docs sync/feishu-map.json 2>/dev/null && git diff --cached --quiet docs sync/feishu-map.json 2>/dev/null; then
             echo "No doc file changes — skip commit"
@@ -67,3 +81,9 @@ jobs:
           git add docs sync/feishu-map.json docs/javascripts/posts-index.json docs/javascripts/posts-index-preview.json
           git commit -m "docs: 飞博虾文档内发布"
           git push
+
+      - name: Fail if publish failed
+        if: steps.publish.outcome == 'failure'
+        run: |
+          echo "发布失败，已写入晚间重试队列（21:00 自动重试）"
+          exit 1

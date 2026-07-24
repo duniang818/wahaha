@@ -10,6 +10,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   fetchFeishuMarkdown,
   markdownFromFeishu,
@@ -22,6 +23,8 @@ import {
 import { normalizeNavDir } from "./lib/publish.js";
 import { movePost } from "./lib/post-manage.js";
 import { ROOT } from "./lib/tenant.js";
+import { enqueueRetry, completeRetry } from "./lib/retry-queue.js";
+import { blogPostUrl } from "./lib/feishu-notify.js";
 
 /** 栏目 → 默认标签（与小组件 NAV_META 一致） */
 const NAV_TAG_DEFAULT = {
@@ -242,7 +245,7 @@ async function searchLedgerRecord(token, appToken, tableId, { slug, docUrl }) {
   return null;
 }
 
-async function upsertLedger(token, payload, extra = {}) {
+export async function upsertLedger(token, payload, extra = {}) {
   const appToken = payload.base_token;
   const tableId = payload.table_id;
   if (!appToken || !tableId) {
@@ -355,7 +358,7 @@ async function upsertLedger(token, payload, extra = {}) {
   return j;
 }
 
-async function writeLocalMarkdown(payload, token) {
+export async function writeLocalMarkdown(payload, token) {
   const resolved = resolveSlug(payload);
   const targetNav = normalizeNavDir(payload.nav_dir || resolved.navDir);
   const action = String(payload.action || payload.mode || "publish");
@@ -543,6 +546,11 @@ function unpublishLocal(payload) {
   return { unpublished: true, slug, navDir, blogRel: rel };
 }
 
+const isMain =
+  process.argv[1] &&
+  fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+
+if (isMain) {
 const payload = loadPayload();
 const action = String(payload.action || payload.mode || "publish");
 // 兼容旧 mode=full / ledger
@@ -641,13 +649,27 @@ const plats = String(payload.platforms || "blog")
   .map(s => s.trim())
   .filter(Boolean);
 const needsBlog = plats.includes("blog") || plats.length === 0;
+const siteUrl =
+  payload.site_url ||
+  process.env.SITE_URL ||
+  "https://duniang818.github.io/wahaha/";
+const blogUrl = blogPostUrl(payload.nav_dir, payload.slug, siteUrl);
+
 if (
   needsBlog &&
-  (normalizedAction === "publish" || normalizedAction === "republish") &&
-  !writeResult.wrote
+  (normalizedAction === "publish" || normalizedAction === "republish")
 ) {
-  console.error(
-    "发布失败：未能从飞书拉取正文并写入 docs/。请将文档分享给「飞博虾」应用后重试。"
-  );
-  process.exit(1);
+  if (writeResult.wrote) {
+    completeRetry(payload);
+  } else {
+    enqueueRetry(payload, {
+      reason: "正文未写入（请分享文档给飞博虾应用）",
+      blogUrl,
+    });
+    console.error(
+      "发布失败：未能从飞书拉取正文并写入 docs/。已加入今晚 21:00 重试队列。"
+    );
+    process.exit(1);
+  }
+}
 }
