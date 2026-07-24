@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T09:26:30.770Z",
+  "generatedAt": "2026-07-24T13:12:00.459Z",
   "navTags": [
     "博客",
     "教育",
@@ -8,8 +8,20 @@
     "飞博虾",
     "其他"
   ],
-  "total": 23,
+  "total": 22,
   "posts": [
+    {
+      "title": "完整部署实施命令文档",
+      "url": "/tech/windows11-github-debian/",
+      "date": "2026-07-24",
+      "nav": "技术",
+      "tags": [
+        "技术",
+        "Debian"
+      ],
+      "excerpt": "<title完整部署实施命令文档（Windows11 → GitHub → Debian 工控机）</title 文档定位：从 Windows 宿主机到 Debian 触屏工控机的端到端一键部署，所有命令可直接复制执行。 目标环境：Wind…",
+      "thumb": "tech/assets/windows11-github-debian/img-01.png"
+    },
     {
       "title": "欢迎来到渡娘的空间",
       "url": "/blog/posts/welcome/",
@@ -23,30 +35,14 @@
       "thumb": ""
     },
     {
-      "title": "Untitled",
-      "url": "/blog/posts/01 firstblog/",
-      "date": "2024-06-03",
-      "nav": "博客",
+      "title": "用飞书写作 + GitHub Pages 建个人博客（可复制实操）",
+      "url": "/tech/feishu-github-blog-guide/",
+      "date": "2026-07-22",
+      "nav": "技术",
       "tags": [
-        "博客",
-        "工具",
-        "分析",
-        "汽车",
-        "首页",
-        "编程"
+        "技术"
       ],
-      "excerpt": "",
-      "thumb": ""
-    },
-    {
-      "title": "about",
-      "url": "/about/",
-      "date": "",
-      "nav": "其他",
-      "tags": [
-        "其他"
-      ],
-      "excerpt": "关于 <aside class=\"dnauthor\" markdown=\"0\" <div class=\"dnauthoravatar\"渡</div <div <strong渡娘</strong <span写字、旅行、折腾工具｜公开站可浏览评论，发布仅作者本机</span </di…",
+      "excerpt": "不买服务器、不租公网：飞书里写文章，GitHub 托管博客。本文给出可直接照做的步骤与命令。",
       "thumb": ""
     }
   ]

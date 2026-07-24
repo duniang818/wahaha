@@ -44,12 +44,13 @@ function parseFrontmatter(text) {
   const meta = {};
   let listKey = null;
   for (const line of raw.split("\n")) {
-    if (/^\s*-\s+/.test(line) && listKey) {
+    const ln = line.replace(/\r$/, "");
+    if (/^\s*-\s+/.test(ln) && listKey) {
       meta[listKey] = meta[listKey] || [];
-      meta[listKey].push(line.replace(/^\s*-\s+/, "").trim().replace(/^["']|["']$/g, ""));
+      meta[listKey].push(ln.replace(/^\s*-\s+/, "").trim().replace(/^["']|["']$/g, ""));
       continue;
     }
-    const m = line.match(/^([a-zA-Z0-9_]+):\s*(.*)$/);
+    const m = ln.match(/^([a-zA-Z0-9_]+):\s*(.*)$/);
     if (!m) continue;
     const key = m[1];
     const val = m[2].trim();

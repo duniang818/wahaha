@@ -345,6 +345,13 @@
 }
 
 /* Sidebar injected article links */
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary,
+  .md-sidebar--secondary {
+    display: block;
+  }
+}
+
 .dn-nav-post-item {
   border-top: 1px dashed rgba(148, 163, 184, 0.22);
 }
