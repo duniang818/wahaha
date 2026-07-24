@@ -812,8 +812,8 @@ export function App() {
 
       setStatus("published");
       setLinkedToDoc(true);
-      setStatusDetail("已触发同步，含正文/路径/标签");
-      setMsg(`✓ 已触发${labels[cmd]}，约 1~5 分钟后可打开博客`);
+      setStatusDetail("已触发 Actions，等待写入正文并部署");
+      setMsg(`✓ 已触发${labels[cmd]}，约 1~5 分钟生效；若仍 404 请检查 Actions 是否「正文已写入」`);
 
       await persistInteraction({
         feiboxiaCfg: cfg,

@@ -635,3 +635,19 @@ console.log(
       ? "正文已写入"
       : "正文未写入"
 );
+
+const plats = String(payload.platforms || "blog")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
+const needsBlog = plats.includes("blog") || plats.length === 0;
+if (
+  needsBlog &&
+  (normalizedAction === "publish" || normalizedAction === "republish") &&
+  !writeResult.wrote
+) {
+  console.error(
+    "发布失败：未能从飞书拉取正文并写入 docs/。请将文档分享给「飞博虾」应用后重试。"
+  );
+  process.exit(1);
+}

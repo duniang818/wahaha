@@ -57,12 +57,13 @@ jobs:
 
       - name: Commit docs if changed
         run: |
-          if git diff --quiet && git diff --cached --quiet; then
-            echo "No doc file changes"
+          if git diff --quiet docs sync/feishu-map.json 2>/dev/null && git diff --cached --quiet docs sync/feishu-map.json 2>/dev/null; then
+            echo "No doc file changes — skip commit"
             exit 0
           fi
+          node scripts/build-posts-index.mjs
           git config user.name "feiboxia-bot"
           git config user.email "feiboxia@users.noreply.github.com"
-          git add docs feiboxia/queue
+          git add docs sync/feishu-map.json docs/javascripts/posts-index.json docs/javascripts/posts-index-preview.json
           git commit -m "docs: 飞博虾文档内发布"
           git push

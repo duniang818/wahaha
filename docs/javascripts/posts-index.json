@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-23T09:12:12.542Z",
+  "generatedAt": "2026-07-24T09:26:30.770Z",
   "navTags": [
     "博客",
     "教育",
@@ -9,21 +9,6 @@
     "其他"
   ],
   "posts": [
-    {
-      "title": "用飞书写作 + GitHub Pages 建个人博客（可复制实操）",
-      "url": "/blog/posts/feishu-github-blog-guide/",
-      "date": "2026-07-22",
-      "nav": "博客",
-      "tags": [
-        "博客",
-        "飞书",
-        "GitHub Pages",
-        "MkDocs",
-        "建站"
-      ],
-      "excerpt": "不买服务器、不租公网：飞书里写文章，GitHub 托管博客。本文给出可直接照做的步骤与命令。",
-      "thumb": ""
-    },
     {
       "title": "欢迎来到渡娘的空间",
       "url": "/blog/posts/welcome/",
@@ -73,6 +58,18 @@
       ],
       "excerpt": "1 安装python==3.11.5版本 2 vscode配置python解释器 下载vscode python插件， 并选择从vsix安装： 到此应该是配置好python环境了，如果是在terminal中输入python，可以确认现在的路径是否是刚才安装的路径。如果还不能运行p…",
       "thumb": "analysis/images/0Xset4.0.0在Windows上源码部署/1717492581936.png"
+    },
+    {
+      "title": "feishu-oneclick-test",
+      "url": "/blog/posts/feishu-oneclick-test/",
+      "date": "",
+      "nav": "博客",
+      "tags": [
+        "博客",
+        "测试"
+      ],
+      "excerpt": "这是一篇由博客助手自动创建的测试文章。 流程验证 1. 在飞书写作 2. 本机一键同步到 MkDocs 博客 3. 可选推送到 GitHub Pages 写于 20260722 11:09。",
+      "thumb": "blog/posts/assets/feishu-oneclick-test/img-01.png"
     },
     {
       "title": "211",
@@ -152,6 +149,17 @@
       "thumb": ""
     },
     {
+      "title": "feishu-github-blog-guide",
+      "url": "/tech/feishu-github-blog-guide/",
+      "date": "",
+      "nav": "技术",
+      "tags": [
+        "技术"
+      ],
+      "excerpt": "如果你也想要「在飞书写随笔，点一下就出现在自己的博客站点」，又不想自己架公网服务器，可以用这套组合： 飞书：写作台（编辑 + 预览）+ 台账（稿件管理） GitHub：代码仓库 + Pages 托管 + Actions 自动部署 本机一小步：把飞书稿同步进仓库（feiboxia:…",
+      "thumb": ""
+    },
+    {
       "title": "feishu-publish",
       "url": "/tech/feishu-publish/",
       "date": "",
@@ -172,6 +180,18 @@
       ],
       "excerpt": "评论配置 界面说明 文章底部评论区默认展示： 游客（默认）：顶部表情墙 + Markdown 富文本编辑器 + 昵称 + 发布 GitHub 账号：切换到 Giscus（含表情墙、输入/预览、GitHub 登录），与线上一致 无需先注册第三方服务即可在本地看到完整评论框。 Git…",
       "thumb": ""
+    },
+    {
+      "title": "windows11-github-debian",
+      "url": "/tech/windows11-github-debian/",
+      "date": "",
+      "nav": "技术",
+      "tags": [
+        "技术",
+        "Debian"
+      ],
+      "excerpt": "<title完整部署实施命令文档（Windows11 → GitHub → Debian 工控机）</title 文档定位：从 Windows 宿主机到 Debian 触屏工控机的端到端一键部署，所有命令可直接复制执行。 目标环境：Wind…",
+      "thumb": "tech/assets/windows11-github-debian/img-01.png"
     },
     {
       "title": "如何利用Mkdocs+Material+GithubPages搭建个人博客",
