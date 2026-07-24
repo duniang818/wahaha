@@ -1,17 +1,17 @@
 {
   "action": "publish",
   "base_token": "ADtHbOF0raWJj0stRApcfjjInLg",
-  "doc_token": "NvC5dYXOco8X28xnCbScFQXnnng",
-  "doc_url": "https://my.feishu.cn/docx/NvC5dYXOco8X28xnCbScFQXnnng",
+  "doc_token": "BKfcdE0LEotl9FxcxGqckflendg",
+  "doc_url": "https://my.feishu.cn/docx/BKfcdE0LEotl9FxcxGqckflendg",
   "nav_dir": "tech",
   "platforms": "blog",
-  "slug": "feishu-github-blog-guide",
+  "slug": "windows11-github-debian",
   "table_id": "tblfvnQ3mm7DlX9X",
-  "tags": "技术,飞博虾",
-  "title": "用飞书写作 +自研云文档小组件（飞博虾）+ GitHub Pages 建个人博客（可复制实操）\n",
-  "resolvedSlug": "feishu-github-blog-guide",
+  "tags": "技术,Debian",
+  "title": "微电网控制系统 — 完整部署实施命令文档（Windows11 → GitHub → Debian 工控机）\n",
+  "resolvedSlug": "windows11-github-debian",
   "wroteMarkdown": false,
   "unpublished": false,
   "blogRel": null,
-  "handledAt": "2026-07-23T13:53:50.324Z"
+  "handledAt": "2026-07-24T06:24:24.634Z"
 }
