@@ -7,6 +7,23 @@ type MdImportMode = "overwrite" | "append" | "new";
 type PlatformId = "blog" | "wechat" | "xhs" | "csdn" | "zhihu";
 type PublishStatus = "unknown" | "never" | "published" | "revoked";
 
+type DocBinding = {
+  navDir: string;
+  slug: string;
+  title?: string;
+  tags: string[];
+  fromMap: boolean;
+};
+
+type MdJobTrack = {
+  jobId: string;
+  progress: number;
+  phase: string;
+  status: "pending" | "running" | "success" | "failure";
+  message: string;
+  newDocUrl?: string;
+};
+
 type Cfg = {
   baseToken: string;
   tableId: string;
@@ -30,6 +47,16 @@ const NAV_META: Record<string, { label: string; tags: string[] }> = {
   travel: { label: "旅行", tags: ["旅行", "飞博虾"] },
   tech: { label: "技术", tags: ["技术", "飞博虾"] },
   life: { label: "生活", tags: ["生活", "飞博虾"] },
+};
+
+/** frontmatter nav 中文标签 → 目录 */
+const NAV_LABEL_TO_DIR: Record<string, string> = {
+  博客: "blog/posts",
+  教育: "education",
+  旅行: "travel",
+  技术: "tech",
+  生活: "life",
+  飞博虾: "feiboxia",
 };
 
 function tagsForNav(navDir: string): string[] {
@@ -284,6 +311,247 @@ function parseOnlinePostUrl(postUrl: string, siteUrl: string) {
   }
 }
 
+function githubHeaders(pat: string) {
+  return {
+    Accept: "application/vnd.github+json",
+    Authorization: `Bearer ${pat}`,
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+}
+
+async function fetchGithubFileContent(cfg: Cfg, repoPath: string): Promise<string | null> {
+  if (!cfg.githubPat?.trim() || !cfg.githubRepo?.trim()) return null;
+  const res = await fetch(
+    `https://api.github.com/repos/${cfg.githubRepo}/contents/${encodeURI(repoPath)}`,
+    { headers: githubHeaders(cfg.githubPat) }
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`GitHub ${res.status}`);
+  const j = (await res.json()) as { content?: string; encoding?: string };
+  if (j.content && j.encoding === "base64") {
+    try {
+      return b64ToUtf8(j.content);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+async function fetchFeishuMap(cfg: Cfg): Promise<Record<string, Record<string, string>>> {
+  try {
+    const text = await fetchGithubFileContent(cfg, "sync/feishu-map.json");
+    if (!text) return {};
+    return JSON.parse(text) as Record<string, Record<string, string>>;
+  } catch {
+    return {};
+  }
+}
+
+function parseFrontmatterMeta(md: string): { nav?: string; tags: string[]; title?: string } {
+  const m = md.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!m) return { tags: [] };
+  const fm = m[1];
+  const tags: string[] = [];
+  let nav: string | undefined;
+  let title: string | undefined;
+
+  const navM = fm.match(/^nav:\s*(.+)$/m);
+  if (navM) nav = navM[1].trim().replace(/^["']|["']$/g, "");
+
+  const titleM = fm.match(/^title:\s*(.+)$/m);
+  if (titleM) title = titleM[1].trim().replace(/^["']|["']$/g, "");
+
+  const listTags = fm.match(/^tags:\s*\n((?:[ \t]*-\s*.+\n?)+)/m);
+  if (listTags) {
+    for (const line of listTags[1].split("\n")) {
+      const t = line.match(/^\s*-\s*(.+)/);
+      if (t) tags.push(t[1].trim().replace(/^["']|["']$/g, ""));
+    }
+  } else {
+    const inline = fm.match(/^tags:\s*\[(.+)\]/m);
+    if (inline) {
+      inline[1].split(",").forEach(s => {
+        const t = s.trim().replace(/^["']|["']$/g, "");
+        if (t) tags.push(t);
+      });
+    }
+  }
+  return { nav, tags, title };
+}
+
+function pathFromMapEntry(entry: Record<string, string>) {
+  let navDir = entry.navDir || "blog/posts";
+  let slug = entry.slug || "";
+  if (entry.path) {
+    const p = String(entry.path).replace(/^docs\//, "").replace(/\.md$/i, "");
+    const parts = p.split("/").filter(Boolean);
+    if (parts.length >= 2) {
+      navDir = parts.slice(0, -1).join("/");
+      slug = slug || parts[parts.length - 1];
+    } else if (parts.length === 1) {
+      slug = slug || parts[0];
+    }
+  }
+  return { navDir, slug };
+}
+
+/** 从 feishu-map + 博文 frontmatter 解析栏目、slug、标签 */
+async function resolveDocBinding(cfg: Cfg, docToken: string): Promise<DocBinding | null> {
+  if (!docToken || !cfg.githubPat?.trim()) return null;
+
+  const map = await fetchFeishuMap(cfg);
+  const entry = map[docToken];
+  let fromMap = false;
+  let navDir = "blog/posts";
+  let slug = KNOWN_DOC_SLUGS[docToken] || "";
+  let title = entry?.title;
+
+  if (entry) {
+    fromMap = true;
+    const parsed = pathFromMapEntry(entry);
+    navDir = parsed.navDir;
+    slug = parsed.slug || slug;
+  }
+
+  if (!slug) return null;
+
+  const md = await fetchGithubFileContent(cfg, `docs/${navDir}/${slug}.md`);
+  let tags = tagsForNav(navDir);
+
+  if (md) {
+    const meta = parseFrontmatterMeta(md);
+    if (meta.nav) {
+      navDir = NAV_LABEL_TO_DIR[meta.nav] || meta.nav;
+    }
+    if (meta.tags.length) tags = meta.tags;
+    if (meta.title) title = meta.title;
+  }
+
+  return { navDir, slug, title, tags, fromMap };
+}
+
+async function fetchJobStatus(cfg: Cfg, jobId: string): Promise<MdJobTrack | null> {
+  try {
+    const text = await fetchGithubFileContent(cfg, `feiboxia/queue/jobs/${jobId}.json`);
+    if (!text) return null;
+    const j = JSON.parse(text) as Record<string, unknown>;
+    const st = String(j.status || "running");
+    return {
+      jobId,
+      progress: Number(j.progress) || 0,
+      phase: String(j.phase || ""),
+      status:
+        st === "success" || st === "failure" || st === "pending" || st === "running"
+          ? st
+          : "running",
+      message: String(j.message || ""),
+      newDocUrl: j.newDocUrl ? String(j.newDocUrl) : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function fetchRecentMdImportRun(cfg: Cfg, sinceIso: string) {
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${cfg.githubRepo}/actions/workflows/feiboxia-md-import.yml/runs?event=repository_dispatch&per_page=8`,
+      { headers: githubHeaders(cfg.githubPat) }
+    );
+    if (!res.ok) return null;
+    const j = (await res.json()) as { workflow_runs?: Array<Record<string, string>> };
+    const since = new Date(sinceIso).getTime();
+    return (
+      (j.workflow_runs || []).find(r => new Date(String(r.created_at)).getTime() >= since - 5000) ||
+      null
+    );
+  } catch {
+    return null;
+  }
+}
+
+async function pollMdImportJob(
+  cfg: Cfg,
+  jobId: string,
+  dispatchAt: string,
+  onUpdate: (j: MdJobTrack) => void
+): Promise<MdJobTrack> {
+  const deadline = Date.now() + 8 * 60 * 1000;
+  let last: MdJobTrack = {
+    jobId,
+    progress: 5,
+    phase: "已触发",
+    status: "pending",
+    message: "等待 GitHub Actions 启动…",
+  };
+  onUpdate(last);
+
+  while (Date.now() < deadline) {
+    await new Promise(r => window.setTimeout(r, 3000));
+
+    const job = await fetchJobStatus(cfg, jobId);
+    if (job) {
+      last = job;
+      onUpdate(job);
+      if (job.status === "success" || job.status === "failure") return job;
+    }
+
+    const run = await fetchRecentMdImportRun(cfg, dispatchAt);
+    if (run) {
+      if (run.status === "queued") {
+        last = {
+          ...last,
+          progress: Math.max(last.progress, 12),
+          phase: "排队中",
+          status: "running",
+          message: "Actions 排队中…",
+        };
+      } else if (run.status === "in_progress") {
+        const elapsed = Date.now() - new Date(dispatchAt).getTime();
+        const est = Math.min(88, 22 + Math.floor(elapsed / 2500));
+        last = {
+          ...last,
+          progress: Math.max(last.progress, est),
+          phase: "导入中",
+          status: "running",
+          message: "正在转换 Markdown 并写入飞书…",
+        };
+      } else if (run.status === "completed") {
+        if (run.conclusion === "failure") {
+          const final = await fetchJobStatus(cfg, jobId);
+          if (final) return final;
+          return {
+            jobId,
+            progress: 100,
+            phase: "失败",
+            status: "failure",
+            message: "Actions 执行失败，请查看日志",
+          };
+        }
+        const final = await fetchJobStatus(cfg, jobId);
+        if (final) return final;
+        last = {
+          ...last,
+          progress: 95,
+          phase: "收尾",
+          status: "running",
+          message: "正在同步任务结果…",
+        };
+      }
+      onUpdate(last);
+    }
+  }
+
+  return {
+    ...last,
+    status: "failure",
+    progress: 100,
+    phase: "超时",
+    message: "等待超时，请到 Actions 查看",
+  };
+}
+
 /** 用 GitHub Contents + 博客 URL 探测，判定发布状态 */
 async function detectPublishStatus(
   cfg: Cfg,
@@ -433,6 +701,8 @@ export function App() {
   const [editingNav, setEditingNav] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [mdImportMode, setMdImportMode] = useState<MdImportMode>("overwrite");
+  const [docBinding, setDocBinding] = useState<DocBinding | null>(null);
+  const [mdJob, setMdJob] = useState<MdJobTrack | null>(null);
   const mdFileRef = useRef<HTMLInputElement>(null);
   const busyRef = useRef(false);
   const collapsedRef = useRef(false);
@@ -471,20 +741,29 @@ export function App() {
     const urlMode = Boolean(onlinePostUrl.trim());
     const orphan =
       urlMode && orphanOnline.exists && !orphanOnline.linkedToCurrent;
+    const bound = linkedToDoc || Boolean(docBinding?.fromMap);
 
     return {
       send: Boolean(docToken) && status === "never" && !urlMode,
-      republish:
-        Boolean(docToken) && hasOnline && linkedToDoc && !orphan,
+      republish: Boolean(docToken) && hasOnline && bound && !orphan,
       pull: orphan,
       revoke: urlMode && orphanOnline.exists,
     };
-  }, [status, docToken, linkedToDoc, onlinePostUrl, orphanOnline]);
+  }, [status, docToken, linkedToDoc, docBinding, onlinePostUrl, orphanOnline]);
 
-  // 切换栏目时同步默认标签（用户仍可改）
-  useEffect(() => {
-    setTagsText(tagsForNav(nav).join(","));
-  }, [nav]);
+  async function applyDocBinding(c: Cfg, token: string) {
+    const binding = await resolveDocBinding(c, token);
+    if (binding) {
+      setDocBinding(binding);
+      setNav(binding.navDir);
+      setSlug(binding.slug);
+      setTagsText(binding.tags.join(","));
+      if (binding.title) setTitle(prev => prev || binding.title!);
+      return binding;
+    }
+    setDocBinding(null);
+    return null;
+  }
 
   async function refreshStatus(c: Cfg, n: string, s: string, token = docToken) {
     setStatus("unknown");
@@ -580,19 +859,24 @@ export function App() {
         setTitle(ctx.title);
         setDocUrl(ctx.url);
         setDocToken(ctx.token);
-        const s =
-          KNOWN_DOC_SLUGS[ctx.token] ||
+        const fallbackSlug =
           slugify(ctx.title, ctx.token ? `doc-${ctx.token.slice(0, 10)}` : "") ||
           `post-${Date.now().toString(36)}`;
-        setSlug(s);
 
-        const last = inter?.lastAction as any;
+        const binding = await applyDocBinding(merged, ctx.token);
+        const last = inter?.lastAction as { nav?: string } | undefined;
         const startNav =
-          last?.nav && merged.navs?.includes(last.nav) ? last.nav : "blog/posts";
-        setNav(startNav);
-        setTagsText(tagsForNav(startNav).join(","));
+          binding?.navDir ||
+          (last?.nav && merged.navs?.includes(last.nav) ? last.nav : "blog/posts");
+        const startSlug = binding?.slug || KNOWN_DOC_SLUGS[ctx.token] || fallbackSlug;
 
-        await refreshStatus(merged, startNav, s, ctx.token);
+        if (!binding) {
+          setNav(startNav);
+          setSlug(startSlug);
+          setTagsText(tagsForNav(startNav).join(","));
+        }
+
+        await refreshStatus(merged, startNav, startSlug, ctx.token);
         await setHostSizeReliable(PANEL_SIZE.w, PANEL_SIZE.h);
       } catch (e: any) {
         setMsg(`初始化失败：${e?.message || e}`);
@@ -856,13 +1140,23 @@ export function App() {
       return;
     }
     setBusy(true);
+    setMdJob(null);
     setMsg("正在读取 Markdown…");
+    const jobId = `md-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const dispatchAt = new Date().toISOString();
     try {
       const text = await file.text();
       if (!text.trim()) throw new Error("文件内容为空");
       if (text.length > 900_000) {
         throw new Error("文件过大（>900KB 文本），请拆分后重试");
       }
+      setMdJob({
+        jobId,
+        progress: 8,
+        phase: "上传",
+        status: "pending",
+        message: "正在提交到 GitHub Actions…",
+      });
       setMsg("正在上传并转换为飞书正文…");
       await dispatchGithub("feiboxia-md-import", {
         mode: mdImportMode,
@@ -870,16 +1164,24 @@ export function App() {
         doc_url: docUrl,
         title: title || file.name.replace(/\.(md|markdown|txt)$/i, ""),
         markdown_b64: utf8ToB64(text),
+        job_id: jobId,
       });
-      const modeLabel =
-        mdImportMode === "new"
-          ? "新建文档"
-          : mdImportMode === "append"
-            ? "追加到文末"
-            : "覆盖当前文档";
-      setMsg(`✓ 已触发 Markdown 导入（${modeLabel}），约 1~3 分钟；完成后刷新文档即可编辑`);
+      const result = await pollMdImportJob(cfg, jobId, dispatchAt, setMdJob);
+      if (result.status === "success") {
+        setMsg(`✓ ${result.message || "导入完成"}`);
+        if (mdImportMode !== "new") {
+          setMsg(prev => `${prev}；请刷新当前文档查看`);
+        }
+      } else {
+        setMsg(`失败：${result.message || "导入失败"}`);
+      }
       if (mdFileRef.current) mdFileRef.current.value = "";
     } catch (e: any) {
+      setMdJob(prev =>
+        prev
+          ? { ...prev, status: "failure", progress: 100, phase: "失败", message: e?.message || String(e) }
+          : null
+      );
       setMsg(`失败：${e?.message || e}`);
     } finally {
       setBusy(false);
@@ -1014,7 +1316,15 @@ export function App() {
             </button>
           </div>
         </header>
-        <p className="tiny muted status-line">{statusDetail}</p>
+        <p className="tiny muted status-line">
+          {statusDetail}
+          {docBinding?.fromMap ? (
+            <span className="binding-hint">
+              {" "}
+              · 已识别 {docBinding.navDir}/{docBinding.slug}
+            </span>
+          ) : null}
+        </p>
 
         {!showSetup && renderCmdBar("cmd-bar-top")}
 
@@ -1203,8 +1513,10 @@ export function App() {
               <select
                 value={nav}
                 onChange={e => {
-                  setNav(e.target.value);
-                  void refreshStatus(cfg, e.target.value, slug);
+                  const v = e.target.value;
+                  setNav(v);
+                  setTagsText(tagsForNav(v).join(","));
+                  void refreshStatus(cfg, v, slug);
                 }}
                 onFocus={onFocusField}
                 onBlur={onBlurField}
@@ -1258,7 +1570,9 @@ export function App() {
                 type="button"
                 className="chip"
                 onClick={() => {
-                  void refreshStatus(cfg, nav, slug);
+                  void applyDocBinding(cfg, docToken).then(b => {
+                    void refreshStatus(cfg, b?.navDir || nav, b?.slug || slug);
+                  });
                   void refreshOrphanUrl(onlinePostUrl);
                 }}
               >
@@ -1302,6 +1616,33 @@ export function App() {
                   if (f) void runMdImport(f);
                 }}
               />
+              {mdJob ? (
+                <div
+                  className={`md-job ${mdJob.status}`}
+                  aria-live="polite"
+                >
+                  <div className="md-job-head">
+                    <span className="md-job-phase">{mdJob.phase || "处理中"}</span>
+                    <span className="md-job-pct">{mdJob.progress}%</span>
+                  </div>
+                  <div className="md-job-bar" role="progressbar" aria-valuenow={mdJob.progress} aria-valuemin={0} aria-valuemax={100}>
+                    <div
+                      className="md-job-fill"
+                      style={{ width: `${Math.min(100, mdJob.progress)}%` }}
+                    />
+                  </div>
+                  <p className="md-job-msg">{mdJob.message}</p>
+                  {mdJob.status === "success" && mdJob.newDocUrl ? (
+                    <button
+                      type="button"
+                      className="linkish md-job-link"
+                      onClick={() => openExternal(mdJob.newDocUrl!)}
+                    >
+                      打开新飞书文档
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
             </details>
           </section>
         )}
