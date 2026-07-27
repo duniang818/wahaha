@@ -1,0 +1,45 @@
+# mihomo（Clash Meta）示例配置
+# 1) 复制为 config.yaml 并填入订阅，或
+# 2) 安装脚本会用 MIHOMO_SUB_URL 拉取完整配置覆盖本文件
+
+mixed-port: 7890
+allow-lan: false
+bind-address: "*"
+mode: rule
+log-level: info
+ipv6: true
+external-controller: 127.0.0.1:9090
+
+# 若使用订阅全量配置，以下 proxy-providers 段可删除
+# 订阅 URL 示例（安装时写入 /etc/mihomo/env）：
+# MIHOMO_SUB_URL=https://example.com/sub?token=xxx
+
+proxy-providers:
+  default-sub:
+    type: http
+    url: "https://example.com/please-replace-subscription"
+    interval: 3600
+    path: /var/lib/mihomo/providers/default-sub.yaml
+    health-check:
+      enable: true
+      interval: 600
+      url: http://www.gstatic.com/generate_204
+
+proxy-groups:
+  - name: GLOBAL
+    type: select
+    proxies:
+      - AUTO
+      - DIRECT
+  - name: AUTO
+    type: url-test
+    use:
+      - default-sub
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+
+rules:
+  - DOMAIN-SUFFIX,github.com,GLOBAL
+  - DOMAIN-SUFFIX,githubusercontent.com,GLOBAL
+  - DOMAIN-SUFFIX,ghcr.io,GLOBAL
+  - MATCH,GLOBAL

@@ -1,6 +1,16 @@
 ---
+
 feishu_doc: XXdPdFNDooTcU5x8sW5cKpJcnuc
 feishu_url: "https://my.feishu.cn/docx/XXdPdFNDooTcU5x8sW5cKpJcnuc"
+title: 飞博虾
+date: 2026-07-24
+nav: 技术
+tags:
+  - 技术
+  - 飞书
+  - 飞博虾
+  - 建站
+  - 部署
 ---
 # 飞博虾
 

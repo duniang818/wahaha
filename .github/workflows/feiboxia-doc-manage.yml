@@ -1,6 +1,6 @@
 name: 飞博虾·博文管理
 
-# 作者：移动栏目 / 改标签 / 删除博文（需 GitHub PAT repository_dispatch）
+# 作者：移动栏目 / 改标签 / 删除 / 拉取 / 撤销（需 GitHub PAT repository_dispatch）
 
 on:
   repository_dispatch:
@@ -21,6 +21,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Register job pending
+        if: github.event_name == 'repository_dispatch'
+        env:
+          CLIENT_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+        run: |
+          CLIENT_PAYLOAD="$(node -e "const p=JSON.parse(process.env.CLIENT_PAYLOAD||'{}');p.job_type='manage';process.stdout.write(JSON.stringify(p))")" \
+            node feiboxia/register-job.mjs
+          git config user.name "feiboxia-bot"
+          git config user.email "feiboxia@users.noreply.github.com"
+          git add feiboxia/queue/jobs/
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: 管理任务排队"
+            git push
+          fi
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -35,20 +50,25 @@ jobs:
           cat feiboxia/queue/doc-manage.json
 
       - name: Run post manage
+        id: manage
+        continue-on-error: true
         env:
           CLIENT_PAYLOAD: ${{ github.event_name == 'repository_dispatch' && toJson(github.event.client_payload) || inputs.payload_json }}
         run: |
           node feiboxia/ci-doc-manage.mjs
           node scripts/build-posts-index.mjs
 
-      - name: Commit changes
+      - name: Commit job status and changes
+        if: always()
         run: |
-          if git diff --quiet && git diff --cached --quiet; then
-            echo "No changes"
-            exit 0
-          fi
           git config user.name "feiboxia-bot"
           git config user.email "feiboxia@users.noreply.github.com"
-          git add docs sync/feishu-map.json docs/javascripts/posts-index.json docs/javascripts/posts-index-preview.json feiboxia/queue
-          git commit -m "docs: 飞博虾作者管理博文"
-          git push
+          git add docs sync/feishu-map.json docs/javascripts/posts-index.json docs/javascripts/posts-index-preview.json docs/javascripts/calendar-index.json feiboxia/queue
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: 飞博虾作者管理博文"
+            git push
+          fi
+
+      - name: Fail if manage failed
+        if: steps.manage.outcome == 'failure'
+        run: exit 1

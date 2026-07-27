@@ -14,15 +14,20 @@
   var sidebarNav = null;
 
   function siteBase() {
+    if (location.pathname.indexOf("/wahaha/") === 0 || location.pathname === "/wahaha") {
+      return "/wahaha";
+    }
     var m = document.querySelector('meta[name="site-base"]');
     if (m && m.content) {
       try {
-        return new URL(m.content, location.origin).pathname.replace(/\/+$/, "") || "";
+        var u = new URL(m.content, location.href);
+        if (u.host === location.host) {
+          return u.pathname.replace(/\/+$/, "") || "";
+        }
       } catch {
         /* ignore */
       }
     }
-    if (location.pathname.indexOf("/wahaha") === 0) return "/wahaha";
     return "";
   }
 
@@ -35,11 +40,8 @@
   }
 
   function indexUrl(name) {
-    try {
-      return new URL("javascripts/" + name, document.baseURI).href;
-    } catch {
-      return "javascripts/" + name;
-    }
+    var base = siteBase();
+    return (base + "/javascripts/" + name).replace(/\/{2,}/g, "/");
   }
 
   function esc(s) {

@@ -413,7 +413,13 @@ input:focus, select:focus {
   color: var(--muted);
   line-height: 1.35;
 }
-.md-job-link { margin-top: 6px; font-size: 12px; }
+.md-import-box.paused,
+.md-import-paused {
+  opacity: 0.72;
+}
+.md-import-paused summary {
+  color: var(--muted);
+}
 .chip {
   border: 1px solid var(--line); background: var(--panel);
   color: var(--muted); border-radius: 999px;

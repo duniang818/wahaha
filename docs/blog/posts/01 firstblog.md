@@ -13,6 +13,7 @@ tags:
 title: Untitled
 description: 
 date: 2024-06-03
+nav: 博客
 ---
 << [[2024-06-02]] | [[2024-06-04]] >>
 

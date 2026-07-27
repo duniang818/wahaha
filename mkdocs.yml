@@ -44,6 +44,7 @@ exclude_docs: |
 not_in_nav: |
   /private/**/*.md
   /.md
+  /calendar/**
 
 plugins:
   - search
@@ -80,11 +81,13 @@ extra_css:
 extra_javascript:
   - javascripts/visitor-badge.js
   - javascripts/nav-posts.js
+  - javascripts/calendar-heatmap.js
   - javascripts/home-feed.js
   - javascripts/page-toc.js
   - https://gcore.jsdelivr.net/npm/marked@12.0.2/marked.min.js
   - https://gcore.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js
   - javascripts/comments-widget.js
+  - javascripts/post-editor.js
 
 extra:
   comments: true

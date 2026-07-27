@@ -25,6 +25,10 @@ import { movePost } from "./lib/post-manage.js";
 import { ROOT } from "./lib/tenant.js";
 import { enqueueRetry, completeRetry } from "./lib/retry-queue.js";
 import { blogPostUrl } from "./lib/feishu-notify.js";
+import { writeJobStatus } from "./lib/job-status.js";
+
+const DEFAULT_BASE_TOKEN = "ADtHbOF0raWJj0stRApcfjjInLg";
+const DEFAULT_TABLE_ID = "tblfvnQ3mm7DlX9X";
 
 /** 栏目 → 默认标签（与小组件 NAV_META 一致） */
 const NAV_TAG_DEFAULT = {
@@ -552,6 +556,27 @@ const isMain =
 
 if (isMain) {
 const payload = loadPayload();
+const jobId = String(payload.job_id || `pub-${Date.now().toString(36)}`);
+payload.base_token = payload.base_token || DEFAULT_BASE_TOKEN;
+payload.table_id = payload.table_id || DEFAULT_TABLE_ID;
+
+function job(patch) {
+  return writeJobStatus(ROOT, jobId, {
+    type: "publish",
+    action: String(payload.action || "publish"),
+    title: String(payload.title || ""),
+    docToken: payload.doc_token || null,
+    ...patch,
+  });
+}
+
+job({
+  status: "running",
+  progress: 10,
+  phase: "开始",
+  message: "正在处理发布请求…",
+});
+
 const action = String(payload.action || payload.mode || "publish");
 // 兼容旧 mode=full / ledger
 const normalizedAction =
@@ -563,10 +588,12 @@ const normalizedAction =
 payload.action = normalizedAction;
 console.log("收到请求:", normalizedAction, payload.title, payload.doc_url, payload.platforms);
 
+try {
 const appId = process.env.FEISHU_APP_ID || "";
 const appSecret = process.env.FEISHU_APP_SECRET || "";
 let token = "";
 if (appId && appSecret) {
+  job({ progress: 20, phase: "鉴权", message: "正在连接飞书…" });
   token = await getTenantToken(appId, appSecret);
 } else {
   console.warn("未设置 FEISHU_APP_ID/SECRET，台账与 OpenAPI 拉正文将受限");
@@ -581,6 +608,7 @@ let writeResult = {
 };
 
 if (normalizedAction === "unpublish") {
+  job({ progress: 45, phase: "撤销", message: "正在下架博文…" });
   writeResult = { ...unpublishLocal(payload), wrote: false };
 } else if (normalizedAction === "publish" || normalizedAction === "republish") {
   const plats = String(payload.platforms || "blog")
@@ -588,6 +616,11 @@ if (normalizedAction === "unpublish") {
     .map(s => s.trim())
     .filter(Boolean);
   if (plats.includes("blog") || plats.length === 0) {
+    job({
+      progress: 40,
+      phase: normalizedAction === "republish" ? "重新发送" : "发送",
+      message: "正在拉取飞书正文并写入博客…",
+    });
     writeResult = await writeLocalMarkdown(payload, token);
   } else {
     // 仅外站：不写博客文件，只登记台账
@@ -603,6 +636,8 @@ if (normalizedAction === "unpublish") {
 // 纠正 payload.slug 供台账使用
 payload.slug = writeResult.slug || safeSlug(payload.title, payload.doc_token);
 payload.nav_dir = writeResult.navDir || payload.nav_dir;
+
+job({ progress: 75, phase: "台账", message: "正在更新飞书台账…" });
 
 if (token) {
   await upsertLedger(token, payload, {
@@ -622,6 +657,7 @@ fs.writeFileSync(
   JSON.stringify(
     {
       ...payload,
+      jobId,
       resolvedSlug: payload.slug,
       wroteMarkdown: writeResult.wrote,
       unpublished: writeResult.unpublished || false,
@@ -661,9 +697,24 @@ if (
 ) {
   if (writeResult.wrote) {
     completeRetry(payload);
+    job({
+      status: "success",
+      progress: 100,
+      phase: "完成",
+      message: `已写入博客 ${payload.nav_dir}/${payload.slug}`,
+      blogUrl,
+      postUrl: blogUrl,
+    });
   } else {
     enqueueRetry(payload, {
       reason: "正文未写入（请分享文档给飞博虾应用）",
+      blogUrl,
+    });
+    job({
+      status: "failure",
+      progress: 100,
+      phase: "失败",
+      message: "未能拉取飞书正文写入博客；已加入今晚 21:00 重试队列",
       blogUrl,
     });
     console.error(
@@ -671,5 +722,21 @@ if (
     );
     process.exit(1);
   }
+} else {
+  job({
+    status: "success",
+    progress: 100,
+    phase: "完成",
+    message: writeResult.unpublished
+      ? "已撤销下架"
+      : "已处理（未要求写博客正文）",
+    blogUrl,
+  });
+}
+} catch (e) {
+  const msg = e?.message || String(e);
+  job({ status: "failure", progress: 100, phase: "失败", message: msg });
+  console.error(msg);
+  process.exit(1);
 }
 }

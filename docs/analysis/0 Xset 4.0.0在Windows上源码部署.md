@@ -1,3 +1,13 @@
+---
+title: 1 安装python==3.11.5版本
+date: 2026-07-21
+nav: 技术
+tags:
+  - 技术
+  - 部署
+  - 统计
+---
+
 # 1 安装python==3.11.5版本
 
 # 2 vscode配置python解释器

@@ -3,7 +3,6 @@ import { BlockitClient } from "@lark-opdev/block-docs-addon-api";
 
 type Action = "publish" | "republish" | "unpublish";
 type Cmd = "send" | "republish" | "pull" | "revoke";
-type MdImportMode = "overwrite" | "append" | "new";
 type PlatformId = "blog" | "wechat" | "xhs" | "csdn" | "zhihu";
 type PublishStatus = "unknown" | "never" | "published" | "revoked";
 
@@ -15,13 +14,15 @@ type DocBinding = {
   fromMap: boolean;
 };
 
-type MdJobTrack = {
+type JobTrack = {
   jobId: string;
   progress: number;
   phase: string;
   status: "pending" | "running" | "success" | "failure";
   message: string;
   newDocUrl?: string;
+  blogUrl?: string;
+  cmd?: Cmd | "md-import";
 };
 
 type Cfg = {
@@ -286,13 +287,6 @@ function b64ToUtf8(b64: string) {
   }
 }
 
-function utf8ToB64(str: string) {
-  const bytes = new TextEncoder().encode(str);
-  let bin = "";
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  return btoa(bin);
-}
-
 function parseOnlinePostUrl(postUrl: string, siteUrl: string) {
   try {
     const u = new URL(postUrl.trim());
@@ -431,7 +425,7 @@ async function resolveDocBinding(cfg: Cfg, docToken: string): Promise<DocBinding
   return { navDir, slug, title, tags, fromMap };
 }
 
-async function fetchJobStatus(cfg: Cfg, jobId: string): Promise<MdJobTrack | null> {
+async function fetchJobStatus(cfg: Cfg, jobId: string): Promise<JobTrack | null> {
   try {
     const text = await fetchGithubFileContent(cfg, `feiboxia/queue/jobs/${jobId}.json`);
     if (!text) return null;
@@ -447,16 +441,23 @@ async function fetchJobStatus(cfg: Cfg, jobId: string): Promise<MdJobTrack | nul
           : "running",
       message: String(j.message || ""),
       newDocUrl: j.newDocUrl ? String(j.newDocUrl) : undefined,
+      blogUrl: j.blogUrl || j.postUrl ? String(j.blogUrl || j.postUrl) : undefined,
     };
   } catch {
     return null;
   }
 }
 
-async function fetchRecentMdImportRun(cfg: Cfg, sinceIso: string) {
+async function fetchRecentWorkflowRun(
+  cfg: Cfg,
+  workflowFile: string,
+  sinceIso: string
+) {
   try {
     const res = await fetch(
-      `https://api.github.com/repos/${cfg.githubRepo}/actions/workflows/feiboxia-md-import.yml/runs?event=repository_dispatch&per_page=8`,
+      `https://api.github.com/repos/${cfg.githubRepo}/actions/workflows/${encodeURIComponent(
+        workflowFile
+      )}/runs?event=repository_dispatch&per_page=8`,
       { headers: githubHeaders(cfg.githubPat) }
     );
     if (!res.ok) return null;
@@ -471,14 +472,16 @@ async function fetchRecentMdImportRun(cfg: Cfg, sinceIso: string) {
   }
 }
 
-async function pollMdImportJob(
+async function pollJob(
   cfg: Cfg,
   jobId: string,
   dispatchAt: string,
-  onUpdate: (j: MdJobTrack) => void
-): Promise<MdJobTrack> {
-  const deadline = Date.now() + 8 * 60 * 1000;
-  let last: MdJobTrack = {
+  workflowFile: string,
+  runningHint: string,
+  onUpdate: (j: JobTrack) => void
+): Promise<JobTrack> {
+  const deadline = Date.now() + 10 * 60 * 1000;
+  let last: JobTrack = {
     jobId,
     progress: 5,
     phase: "已触发",
@@ -497,7 +500,7 @@ async function pollMdImportJob(
       if (job.status === "success" || job.status === "failure") return job;
     }
 
-    const run = await fetchRecentMdImportRun(cfg, dispatchAt);
+    const run = await fetchRecentWorkflowRun(cfg, workflowFile, dispatchAt);
     if (run) {
       if (run.status === "queued") {
         last = {
@@ -513,9 +516,9 @@ async function pollMdImportJob(
         last = {
           ...last,
           progress: Math.max(last.progress, est),
-          phase: "导入中",
+          phase: "执行中",
           status: "running",
-          message: "正在转换 Markdown 并写入飞书…",
+          message: runningHint,
         };
       } else if (run.status === "completed") {
         if (run.conclusion === "failure") {
@@ -700,10 +703,8 @@ export function App() {
   const [newNav, setNewNav] = useState("");
   const [editingNav, setEditingNav] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [mdImportMode, setMdImportMode] = useState<MdImportMode>("overwrite");
   const [docBinding, setDocBinding] = useState<DocBinding | null>(null);
-  const [mdJob, setMdJob] = useState<MdJobTrack | null>(null);
-  const mdFileRef = useRef<HTMLInputElement>(null);
+  const [cmdJob, setCmdJob] = useState<JobTrack | null>(null);
   const busyRef = useRef(false);
   const collapsedRef = useRef(false);
   const pinOpen = useRef(false);
@@ -1065,8 +1066,20 @@ export function App() {
       revoke: "撤销",
     };
 
+    const jobId = `${cmd}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+    const dispatchAt = new Date().toISOString();
+
     setBusy(true);
+    setCmdJob({
+      jobId,
+      progress: 8,
+      phase: "提交",
+      status: "pending",
+      message: `正在触发「${labels[cmd]}」…`,
+      cmd,
+    });
     setMsg(`正在${labels[cmd]}…`);
+
     try {
       if (cmd === "pull" || cmd === "revoke") {
         await dispatchGithub("feiboxia-doc-manage", {
@@ -1075,21 +1088,35 @@ export function App() {
           site_url: cfg.siteUrl,
           doc_url: docUrl,
           doc_token: docToken,
+          job_id: jobId,
         });
-        if (cmd === "pull") {
-          setLinkedToDoc(true);
-          setStatus("published");
-          setStatusDetail("已绑定本飞书文档，正文保留线上版本");
-          setMsg("✓ 已拉取绑定，约 1~5 分钟后生效");
+        const result = await pollJob(
+          cfg,
+          jobId,
+          dispatchAt,
+          "feiboxia-doc-manage.yml",
+          cmd === "pull" ? "正在绑定飞书文档与线上博文…" : "正在撤销线上博文…",
+          j => setCmdJob({ ...j, cmd })
+        );
+        if (result.status === "success") {
+          if (cmd === "pull") {
+            setLinkedToDoc(true);
+            setStatus("published");
+            setStatusDetail("已绑定本飞书文档，正文保留线上版本");
+          } else {
+            setStatus("never");
+            setStatusDetail("已撤销删除线上博文");
+            setLinkedToDoc(false);
+          }
+          setMsg(`✓ ${result.message || labels[cmd] + "成功"}`);
         } else {
-          setStatus("never");
-          setStatusDetail("已触发撤销删除");
-          setMsg("✓ 已触发撤销，约 1~5 分钟后下线");
+          setMsg(`失败：${result.message || labels[cmd] + "失败"}`);
         }
         return;
       }
 
       const action: Action = cmd === "send" ? "publish" : "republish";
+      // client_payload 最多 10 字段：base_token/table_id 由 CI 默认值补齐
       await dispatchGithub("feiboxia-doc-publish", {
         action,
         title,
@@ -1098,94 +1125,115 @@ export function App() {
         nav_dir: nav,
         slug:
           slug || slugify(title, docToken ? `doc-${docToken.slice(0, 10)}` : ""),
-        base_token: cfg.baseToken,
-        table_id: cfg.tableId,
         platforms: selected.join(","),
         tags: tagsPayload() || tagsForNav(nav).join(","),
-      });
-
-      setStatus("published");
-      setLinkedToDoc(true);
-      setStatusDetail("已触发 Actions，等待写入正文并部署");
-      setMsg(`✓ 已触发${labels[cmd]}，约 1~5 分钟生效；若失败将于今晚 21:00 自动重试并飞书通知`);
-
-      await persistInteraction({
-        feiboxiaCfg: cfg,
-        lastAction: {
-          at: new Date().toISOString(),
-          action,
-          platforms: selected.join(","),
-          title,
-          postUrl,
-          nav,
-          slug,
-          status: "published",
-        },
-      });
-    } catch (e: any) {
-      setMsg(`失败：${e?.message || e}`);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function runMdImport(file: File) {
-    if (!cfg.githubPat?.trim() || !cfg.githubRepo?.trim()) {
-      openSetup();
-      setMsg("请先在「设置」填写 GitHub PAT");
-      return;
-    }
-    if (mdImportMode !== "new" && !docToken) {
-      setMsg("请在飞书文档内打开飞博虾后再导入");
-      return;
-    }
-    setBusy(true);
-    setMdJob(null);
-    setMsg("正在读取 Markdown…");
-    const jobId = `md-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-    const dispatchAt = new Date().toISOString();
-    try {
-      const text = await file.text();
-      if (!text.trim()) throw new Error("文件内容为空");
-      if (text.length > 900_000) {
-        throw new Error("文件过大（>900KB 文本），请拆分后重试");
-      }
-      setMdJob({
-        jobId,
-        progress: 8,
-        phase: "上传",
-        status: "pending",
-        message: "正在提交到 GitHub Actions…",
-      });
-      setMsg("正在上传并转换为飞书正文…");
-      await dispatchGithub("feiboxia-md-import", {
-        mode: mdImportMode,
-        doc_token: docToken,
-        doc_url: docUrl,
-        title: title || file.name.replace(/\.(md|markdown|txt)$/i, ""),
-        markdown_b64: utf8ToB64(text),
         job_id: jobId,
+        site_url: cfg.siteUrl,
       });
-      const result = await pollMdImportJob(cfg, jobId, dispatchAt, setMdJob);
+
+      const result = await pollJob(
+        cfg,
+        jobId,
+        dispatchAt,
+        "feiboxia-doc-publish.yml",
+        "正在拉取飞书正文并写入博客…",
+        j => setCmdJob({ ...j, cmd })
+      );
+
       if (result.status === "success") {
-        setMsg(`✓ ${result.message || "导入完成"}`);
-        if (mdImportMode !== "new") {
-          setMsg(prev => `${prev}；请刷新当前文档查看`);
-        }
+        setStatus("published");
+        setLinkedToDoc(true);
+        setStatusDetail(result.message || "已写入博客");
+        setMsg(`✓ ${result.message || labels[cmd] + "成功"}`);
+        await persistInteraction({
+          feiboxiaCfg: cfg,
+          lastAction: {
+            at: new Date().toISOString(),
+            action,
+            platforms: selected.join(","),
+            title,
+            postUrl: result.blogUrl || postUrl,
+            nav,
+            slug,
+            status: "published",
+          },
+        });
+        void refreshStatus(cfg, nav, slug);
       } else {
-        setMsg(`失败：${result.message || "导入失败"}`);
+        setMsg(`失败：${result.message || labels[cmd] + "失败"}`);
       }
-      if (mdFileRef.current) mdFileRef.current.value = "";
     } catch (e: any) {
-      setMdJob(prev =>
+      setCmdJob(prev =>
         prev
-          ? { ...prev, status: "failure", progress: 100, phase: "失败", message: e?.message || String(e) }
+          ? {
+              ...prev,
+              status: "failure",
+              progress: 100,
+              phase: "失败",
+              message: e?.message || String(e),
+            }
           : null
       );
       setMsg(`失败：${e?.message || e}`);
     } finally {
       setBusy(false);
     }
+  }
+
+  function renderJobProgress(job: JobTrack | null) {
+    if (!job) return null;
+    const cmdLabel: Record<string, string> = {
+      send: "发送",
+      republish: "重新发送",
+      pull: "拉取",
+      revoke: "撤销",
+      "md-import": "导入",
+    };
+    const head = job.cmd ? `${cmdLabel[job.cmd] || job.cmd} · ` : "";
+    return (
+      <div className={`md-job ${job.status}`} aria-live="polite">
+        <div className="md-job-head">
+          <span className="md-job-phase">
+            {head}
+            {job.phase || "处理中"}
+          </span>
+          <span className="md-job-pct">{job.progress}%</span>
+        </div>
+        <div
+          className="md-job-bar"
+          role="progressbar"
+          aria-valuenow={job.progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className="md-job-fill"
+            style={{ width: `${Math.min(100, job.progress)}%` }}
+          />
+        </div>
+        <p className="md-job-msg">{job.message}</p>
+        {job.status === "success" && (job.blogUrl || job.newDocUrl) ? (
+          <button
+            type="button"
+            className="linkish md-job-link"
+            onClick={() => openExternal(job.blogUrl || job.newDocUrl!)}
+          >
+            {job.blogUrl ? "打开博客链接" : "打开飞书文档"}
+          </button>
+        ) : null}
+        {job.status === "failure" ? (
+          <button
+            type="button"
+            className="linkish md-job-link"
+            onClick={() =>
+              openExternal(`https://github.com/${cfg.githubRepo}/actions`)
+            }
+          >
+            查看 Actions 日志
+          </button>
+        ) : null}
+      </div>
+    );
   }
 
   function renderCmdBar(extraClass = "") {
@@ -1327,6 +1375,7 @@ export function App() {
         </p>
 
         {!showSetup && renderCmdBar("cmd-bar-top")}
+        {!showSetup && renderJobProgress(cmdJob)}
 
         {showSetup ? (
           <section className="panel">
@@ -1589,60 +1638,11 @@ export function App() {
               </button>
             </div>
 
-            <details className="md-import-box">
-              <summary>导入 Markdown → 飞书正文（可编辑）</summary>
+            <details className="md-import-box md-import-paused">
+              <summary>导入 Markdown → 飞书正文（已暂停）</summary>
               <p className="hint tiny muted">
-                上传 .md 文件，转为飞书 docx 正文（非附件）。需文档已分享给飞博虾应用。
+                飞书侧导入能力已可用，小组件内「上传 Markdown」入口暂时停用。请直接在飞书文档中编辑，再用上方「发送 / 重新发送」。
               </p>
-              <label>导入方式</label>
-              <select
-                value={mdImportMode}
-                onChange={e => setMdImportMode(e.target.value as MdImportMode)}
-                onFocus={onFocusField}
-                onBlur={onBlurField}
-              >
-                <option value="overwrite">覆盖当前文档正文</option>
-                <option value="append">追加到当前文档末尾</option>
-                <option value="new">新建飞书文档</option>
-              </select>
-              <label>选择 Markdown 文件</label>
-              <input
-                ref={mdFileRef}
-                type="file"
-                accept=".md,.markdown,.txt,text/markdown,text/plain"
-                disabled={busy}
-                onChange={e => {
-                  const f = e.target.files?.[0];
-                  if (f) void runMdImport(f);
-                }}
-              />
-              {mdJob ? (
-                <div
-                  className={`md-job ${mdJob.status}`}
-                  aria-live="polite"
-                >
-                  <div className="md-job-head">
-                    <span className="md-job-phase">{mdJob.phase || "处理中"}</span>
-                    <span className="md-job-pct">{mdJob.progress}%</span>
-                  </div>
-                  <div className="md-job-bar" role="progressbar" aria-valuenow={mdJob.progress} aria-valuemin={0} aria-valuemax={100}>
-                    <div
-                      className="md-job-fill"
-                      style={{ width: `${Math.min(100, mdJob.progress)}%` }}
-                    />
-                  </div>
-                  <p className="md-job-msg">{mdJob.message}</p>
-                  {mdJob.status === "success" && mdJob.newDocUrl ? (
-                    <button
-                      type="button"
-                      className="linkish md-job-link"
-                      onClick={() => openExternal(mdJob.newDocUrl!)}
-                    >
-                      打开新飞书文档
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
             </details>
           </section>
         )}

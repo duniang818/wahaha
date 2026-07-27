@@ -1,3 +1,13 @@
+---
+title: 1 每日一句
+date: 2026-07-21
+nav: 技术
+tags:
+  - 技术
+  - 建站
+  - Obsidian
+---
+
 # 1 每日一句
 
 > [!quote] There is no greater harm than that of time wasted.

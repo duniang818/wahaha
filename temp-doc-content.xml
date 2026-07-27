@@ -1,0 +1,328 @@
+<title>用飞书写作 + GitHub Pages 建个人博客（可复制实操）</title>
+
+<callout emoji="💡" background-color="light-yellow" border-color="yellow">
+  <p><b>一句话结论</b>：在飞书写文章 → 本机或文档小组件触发 → GitHub 仓库自动生成 Markdown → GitHub Pages 自动发布。全程不需要自有服务器。</p>
+  <p><b>适合谁</b>：想有一个长期可访问的个人博客，但不想维护服务器；已经在用飞书写东西；愿意装一个本地命令行工具。</p>
+  <p><b>预期效果</b>：写完后执行一条命令，或直接在飞书文档里点「发布」，博客就上线了。</p>
+</callout>
+
+<h1>1. 30 秒看懂整体流程</h1>
+
+<whiteboard type="mermaid"><![CDATA[
+graph LR
+    A[飞书云文档] -->|写作| B[飞书多维表格稿件台账]
+    B -->|状态：待发博客| C[本机 npm run feiboxia:ship]
+    C -->|lark-cli 拉取| D[GitHub 仓库 docs/]
+    D -->|git push| E[GitHub Actions]
+    E -->|MkDocs build| F[GitHub Pages]
+    F -->|URL| G[读者访问博客]
+    H[飞博虾文档小组件] -->|可选：一键发布| C
+]]></whiteboard>
+
+<p>这张图里有三个核心角色：</p>
+<ul>
+  <li><b>飞书</b>：写作台 + 稿件台账。你平时只在这里写。</li>
+  <li><b>本机</b>：中转站。因为飞书云端访问不了你家里的电脑，所以「把文章写进 GitHub」这一步由本机完成。</li>
+  <li><b>GitHub</b>：仓库 + Pages 托管 + Actions 自动构建。</li>
+</ul>
+
+<hr/>
+
+<h1>2. 你需要准备什么</h1>
+
+<h2>2.1 账号</h2>
+
+<table>
+  <thead><tr><th background-color="light-gray">账号</th><th background-color="light-gray">用途</th><th background-color="light-gray">是否需要</th></tr></thead>
+  <tbody>
+    <tr><td>GitHub 账号</td><td>建仓库、托管代码、开 Pages</td><td><b>必须</b></td></tr>
+    <tr><td>飞书账号</td><td>写文档、建多维表格台账</td><td><b>必须</b></td></tr>
+  </tbody>
+</table>
+
+<h2>2.2 本机环境</h2>
+
+<table>
+  <thead><tr><th background-color="light-gray">工具</th><th background-color="light-gray">用途</th><th background-color="light-gray">安装命令 / 说明</th></tr></thead>
+  <tbody>
+    <tr><td>Git</td><td>代码版本管理</td><td>https://git-scm.com</td></tr>
+    <tr><td>Node.js ≥ 18</td><td>跑飞博虾发布脚本</td><td>https://nodejs.org</td></tr>
+    <tr><td>Python 3</td><td>MkDocs 构建环境</td><td>https://python.org</td></tr>
+    <tr><td>lark-cli</td><td>从飞书拉取文档内容</td><td><code>npm i -g @larksuite/cli</code></td></tr>
+  </tbody>
+</table>
+
+<callout emoji="⚠️" background-color="light-red" border-color="red">
+  <p><b>关于 Windows 用户</b>：以下命令默认在 PowerShell 中运行。如果你用 Mac/Linux，把 <code>.\</code> 换成 <code>./</code>，把 <code>Activate.ps1</code> 换成 <code>bin/activate</code> 即可。</p>
+</callout>
+
+<hr/>
+
+<h1>3. 快速检查清单（开始前逐项确认）</h1>
+
+<checkbox done="false">已有 GitHub 账号，能创建公开仓库</checkbox>
+<checkbox done="false">已有飞书账号，能创建云文档和多维表格</checkbox>
+<checkbox done="false">本机已安装 Git、Node.js、Python</checkbox>
+<checkbox done="false">已安装 lark-cli 并登录（docs + base 两个 scope）</checkbox>
+<checkbox done="false">已确定博客仓库名（例如 <code>wahaha</code>）</checkbox>
+
+<hr/>
+
+<h1>4. 详细搭建步骤</h1>
+
+<h2>Step 1：创建 GitHub 仓库</h2>
+
+<ol>
+  <li seq="auto">打开 https://github.com/new，创建一个新仓库。</li>
+  <li seq="auto">仓库名建议用英文名，例如 <code>wahaha</code>。</li>
+  <li seq="auto">选择 <b>Public</b>（公开仓库才能免费使用 GitHub Pages）。</li>
+  <li seq="auto">不要勾选 README 或 .gitignore，我们接下来本机初始化。</li>
+</ol>
+
+<callout emoji="✅" background-color="light-green" border-color="green">
+  <p><b>完成后记住</b>：仓库地址是 <code>https://github.com/你的用户名/仓库名</code>。</p>
+</callout>
+
+<h2>Step 2：用 MkDocs Material 初始化博客</h2>
+
+<p>在本地创建一个文件夹，然后依次执行：</p>
+
+<pre lang="powershell" caption="初始化 MkDocs 博客"><code>mkdir my-blog
+cd my-blog
+git init
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install mkdocs-material
+mkdocs new .
+</code></pre>
+
+<p>编辑 <code>mkdocs.yml</code>，至少包含以下内容：</p>
+
+<pre lang="yaml" caption="mkdocs.yml 最小配置"><code>site_name: 你的站点名
+site_url: https://你的用户名.github.io/仓库名
+repo_url: https://github.com/你的用户名/仓库名
+
+theme:
+  name: material
+  language: zh
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: 切换到深色模式
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: 切换到浅色模式
+
+plugins:
+  - search
+  - blog:
+      blog_dir: blog
+      post_dir: blog/posts
+      archive: false
+</code></pre>
+
+<p>然后在 <code>docs/</code> 下创建目录：</p>
+
+<pre lang="text"><code>docs/
+  index.md              # 博客首页
+  blog/posts/           # 随笔
+  tech/                 # 技术文章
+  travel/               # 旅行
+  life/                 # 生活
+  feiboxia/             # 工作台说明页（可选）
+</code></pre>
+
+<h2>Step 3：开启 GitHub Pages</h2>
+
+<ol>
+  <li seq="auto">进入仓库页面，点击 <b>Settings</b>。</li>
+  <li seq="auto">左侧选择 <b>Pages</b>。</li>
+  <li seq="auto">在 <b>Source</b> 下选择 <b>GitHub Actions</b>。</li>
+  <li seq="auto">回到仓库首页，点击 <b>Actions</b> → 搜索 <b>Pages</b> 工作流，选择 <b>Configure</b>，然后直接 Commit。</li>
+</ol>
+
+<p>首次推送后，Actions 会自动构建并发布。几分钟后访问：</p>
+
+<p><code>https://你的用户名.github.io/仓库名</code></p>
+
+<h2>Step 4：安装并登录 lark-cli</h2>
+
+<p>打开 PowerShell，依次执行：</p>
+
+<pre lang="powershell" caption="lark-cli 安装与登录"><code>npm i -g @larksuite/cli
+lark-cli config init --new --lang zh
+</code></pre>
+
+<p>按提示在浏览器完成应用配置。然后分别授权两个 scope：</p>
+
+<pre lang="powershell"><code>lark-cli auth login --domain docs
+lark-cli auth login --domain base
+</code></pre>
+
+<callout emoji="❗" background-color="light-yellow" border-color="yellow">
+  <p><b>注意</b>：两个 scope 都要登录。docs 用于读取云文档，base 用于写入多维表格台账。</p>
+</callout>
+
+<h2>Step 5：创建飞书「稿件台账」</h2>
+
+<p>在飞书创建一个多维表格，建议字段如下：</p>
+
+<table>
+  <thead><tr><th background-color="light-gray">字段名</th><th background-color="light-gray">类型</th><th background-color="light-gray">用途</th></tr></thead>
+  <tbody>
+    <tr><td>标题</td><td>文本</td><td>文章标题</td></tr>
+    <tr><td>飞书文档</td><td>超链接</td><td>原文档链接</td></tr>
+    <tr><td>slug</td><td>文本</td><td>URL 文件名（可空，自动生成）</td></tr>
+    <tr><td>导航栏目</td><td>单选</td><td>blog/posts / tech / travel / life</td></tr>
+    <tr><td>状态</td><td>单选</td><td>草稿 / 待发博客 / 已发博客</td></tr>
+    <tr><td>一键操作</td><td>单选</td><td>立即发布 / 定时发布</td></tr>
+    <tr><td>定时发布时间</td><td>日期</td><td>可选</td></tr>
+    <tr><td>发布结果</td><td>文本</td><td>发布后回写结果</td></tr>
+    <tr><td>博客路径</td><td>文本</td><td>docs/ 下的相对路径</td></tr>
+  </tbody>
+</table>
+
+<h2>Step 6：配置本机发布脚本</h2>
+
+<p>把仓库里的发布脚本接到你的项目。如果你已有 <code>feiboxia</code> 脚本，确保根目录有 <code>sync/feishu-cms.json</code> 配置：</p>
+
+<pre lang="json" caption="sync/feishu-cms.json"><code>{
+  "baseToken": "你的台账 base_token",
+  "tableId": "你的台账 table_id",
+  "siteUrl": "https://你的用户名.github.io/仓库名/"
+}
+</code></pre>
+
+<p>然后安装依赖并测试：</p>
+
+<pre lang="powershell"><code>npm install
+npm run feiboxia:ship
+</code></pre>
+
+<p>如果看到类似以下输出，说明成功了：</p>
+
+<pre lang="text"><code>✓ 拉取正文
+✓ 写入 docs/blog/posts/xxx.md
+✓ git push 完成
+</code></pre>
+
+<hr/>
+
+<h1>5. 发布一篇博文的完整 SOP</h1>
+
+<ol>
+  <li seq="auto">在飞书新建一篇云文档，写好标题和正文。</li>
+  <li seq="auto">打开「稿件台账」，新增一行，粘贴文档链接。</li>
+  <li seq="auto">选择导航栏目（例如 <code>blog/posts</code>）。</li>
+  <li seq="auto">状态设为 <b>待发博客</b>（或一键操作设为 <b>立即发布</b>）。</li>
+  <li seq="auto">在本机执行：
+    <pre lang="powershell"><code>npm run feiboxia:ship</code></pre>
+  </li>
+  <li seq="auto">等待 1~3 分钟，打开 GitHub Actions 看部署是否成功。</li>
+  <li seq="auto">打开博客对应栏目，确认文章已上线。</li>
+</ol>
+
+<callout emoji="✅" background-color="light-green" border-color="green">
+  <p><b>小技巧</b>：文章的 slug 默认由标题生成；如果想指定，在台账里填写 slug 字段即可。</p>
+</callout>
+
+<hr/>
+
+<h1>6. 飞博虾云文档小组件（可选）</h1>
+
+<p>如果你希望「连本机命令都不用打开」，可以在飞书文档里插入「飞博虾」小组件：</p>
+
+<ol>
+  <li seq="auto">在文档空白处输入 <code>/</code> 或点击 <code>+</code>。</li>
+  <li seq="auto">搜索「飞博虾」，插入小组件。</li>
+  <li seq="auto">首次使用点击「设置」，填写 GitHub PAT（需 repo + workflow 权限）和仓库名。</li>
+  <li seq="auto">选择动作：发布 / 重新发布 / 撤销发布。</li>
+  <li seq="auto">勾选平台：GitHub 博客（自动）、微信 / 小红书 / CSDN / 知乎（备稿/撤销清单）。</li>
+</ol>
+
+<whiteboard type="mermaid"><![CDATA[
+graph LR
+    A[飞书文档内飞博虾小组件] -->|一键发布/撤销| B[GitHub repository_dispatch]
+    B --> C[Actions 写台账]
+    C --> D[生成/更新 docs/ 文件]
+    D --> E[GitHub Pages]
+]]></whiteboard>
+
+<callout emoji="❗" background-color="light-yellow" border-color="yellow">
+  <p><b>注意</b>：小组件发布依赖仓库里的 <code>.github/workflows/feiboxia-doc-publish.yml</code> 和 <code>feiboxia/ci-doc-publish.mjs</code>，需要已推送到 GitHub 并配置 Secrets（FEISHU_APP_ID / FEISHU_APP_SECRET）。</p>
+</callout>
+
+<hr/>
+
+<h1>7. 常见问题 FAQ</h1>
+
+<h2>Q1：能不能完全不碰电脑？</h2>
+<p><b>A</b>：写作可以只在飞书；但发布至少要本机执行一次同步，或者使用飞博虾小组件 + GitHub Actions。没有自有公网时，这是最稳的折中。</p>
+
+<h2>Q2：微信 / 小红书 / CSDN / 知乎也能一键发布吗？</h2>
+<p><b>A</b>：GitHub 博客可以全自动写入。微信公众号、小红书、CSDN、知乎需要各自平台的后台凭证，目前最佳实践是「复制文案 + 手动粘贴」到各平台。先把「飞书 → 博客」跑通，再加外站。</p>
+
+<h2>Q3：文章更新后怎么重新发布？</h2>
+<p><b>A</b>：修改飞书文档后，再次执行 <code>npm run feiboxia:ship</code>，或点击飞博虾小组件的「重新发布」。系统会按文档链接找到已有博文并覆盖更新。</p>
+
+<h2>Q4：想撤销已发布文章怎么办？</h2>
+<p><b>A</b>：使用飞博虾小组件「撤销发布」，选择 GitHub 博客后系统会自动将博文标为 draft（下架）；微信/小红书等外站需按生成的撤销清单手动到各平台后台操作。</p>
+
+<h2>Q5：私密内容怎么办？</h2>
+<p><b>A</b>：不要推进公开仓库；或放在构建时排除的目录。MkDocs 的 <code>nav</code> 不引用即可避免生成页面。</p>
+
+<hr/>
+
+<h1>8. 推荐目录结构</h1>
+
+<p>一个可以直接抄的结构：</p>
+
+<pre lang="text" caption="项目目录"><code>my-blog/
+  .venv/                  # Python 虚拟环境（不提交）
+  .github/
+    workflows/
+      deploy.yml          # GitHub Pages 构建
+      feiboxia-doc-publish.yml  # 飞博虾文档内发布
+  docs/
+    index.md              # 首页
+    blog/
+      posts/              # 随笔
+      index.md            # 博客栏目页
+    tech/                 # 技术
+    travel/               # 旅行
+    life/                 # 生活
+    feiboxia/             # 工作台说明页
+  feiboxia/               # 发布脚本
+    ci-doc-publish.mjs
+    docs-addon/           # 飞博虾小组件源码
+    lib/
+    ship.mjs
+  sync/
+    feishu-cms.json       # 台账配置（不提交）
+  mkdocs.yml
+  package.json
+  .gitignore
+</code></pre>
+
+<hr/>
+
+<h1>9. 下一步</h1>
+
+<ul>
+  <li>先按 Step 1~6 把基础链路跑通。</li>
+  <li>写第一篇测试文章，执行一次 <code>npm run feiboxia:ship</code>。</li>
+  <li>确认 GitHub Pages 能看到文章后，再尝试飞博虾小组件。</li>
+  <li>逐步完善导航栏目、首页介绍、工作台页面。</li>
+</ul>
+
+<callout emoji="💡" background-color="light-yellow" border-color="yellow">
+  <p><b>本文档本身就是用该流程发布的示例</b>。你可以把这篇文章的标题、栏目改一改，复用同一条命令再发下一篇。</p>
+</callout>
