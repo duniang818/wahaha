@@ -1,12 +1,14 @@
 {
   "type": "publish",
-  "status": "pending",
-  "progress": 5,
-  "phase": "排队",
-  "message": "GitHub Actions 已接收「发送/重新发送」任务…",
+  "status": "failure",
+  "progress": 100,
+  "phase": "失败",
+  "message": "未能拉取飞书正文写入博客；已加入今晚 21:00 重试队列",
   "mode": "publish",
   "title": "Debian 13 工控机完整实施文档",
   "docToken": "GIvtdaQM8oNVfhxywa3cnPXWnCr",
   "jobId": "send-ms30g37u-w490n",
-  "updatedAt": "2026-07-27T09:14:35.256Z"
+  "updatedAt": "2026-07-27T09:14:42.167Z",
+  "action": "publish",
+  "blogUrl": "https://duniang818.github.io/wahaha/tech/debian-ipc-setup/"
 }
