@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T10:04:14.829Z",
+  "generatedAt": "2026-07-27T10:05:51.359Z",
   "navTags": [
     "博客",
     "教育",
@@ -21,7 +21,7 @@
         "SSH",
         "部署"
       ],
-      "excerpt": "Debian 13 工控机完整实施文档",
+      "excerpt": "项目：xxxx微电网 · 10kW（在xxxx 代码基础上迭代） 目标机：Debian 13 Trixie 工控机（hostname / Tailscale：landaipc） 开发机：Windows + Cursor，经 Tailscal…",
       "thumb": "",
       "tasksTotal": 8,
       "tasksDone": 0,
