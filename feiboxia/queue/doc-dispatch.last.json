@@ -2,7 +2,7 @@
   "action": "publish",
   "doc_token": "GIvtdaQM8oNVfhxywa3cnPXWnCr",
   "doc_url": "https://my.feishu.cn/docx/GIvtdaQM8oNVfhxywa3cnPXWnCr",
-  "job_id": "send-ms2ypsc8-jpmce",
+  "job_id": "send-ms2zgmx6-bejpy",
   "nav_dir": "tech",
   "platforms": "blog",
   "site_url": "https://duniang818.github.io/wahaha/",
@@ -11,10 +11,10 @@
   "title": "Debian 13 工控机完整实施文档",
   "base_token": "ADtHbOF0raWJj0stRApcfjjInLg",
   "table_id": "tblfvnQ3mm7DlX9X",
-  "jobId": "send-ms2ypsc8-jpmce",
+  "jobId": "send-ms2zgmx6-bejpy",
   "resolvedSlug": "debian-ipc-setup",
   "wroteMarkdown": false,
   "unpublished": false,
   "blogRel": null,
-  "handledAt": "2026-07-27T08:26:19.075Z"
+  "handledAt": "2026-07-27T08:47:11.391Z"
 }
