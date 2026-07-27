@@ -1,0 +1,12 @@
+{
+  "type": "publish",
+  "status": "pending",
+  "progress": 5,
+  "phase": "排队",
+  "message": "GitHub Actions 已接收「发送/重新发送」任务…",
+  "mode": "publish",
+  "title": "Debian 13 工控机完整实施文档",
+  "docToken": "GIvtdaQM8oNVfhxywa3cnPXWnCr",
+  "jobId": "send-ms2zgmx6-bejpy",
+  "updatedAt": "2026-07-27T08:47:03.475Z"
+}
