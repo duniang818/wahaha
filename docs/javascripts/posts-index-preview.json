@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T00:28:55.071Z",
+  "generatedAt": "2026-07-27T10:04:14.829Z",
   "navTags": [
     "博客",
     "教育",
@@ -7,8 +7,27 @@
     "技术",
     "飞博虾"
   ],
-  "total": 21,
+  "total": 22,
   "posts": [
+    {
+      "title": "Debian 13 工控机完整实施文档",
+      "url": "/tech/debian-ipc-setup/",
+      "path": "docs/tech/debian-ipc-setup.md",
+      "date": "2026-07-27",
+      "nav": "技术",
+      "tags": [
+        "技术",
+        "Debian",
+        "Docker",
+        "SSH",
+        "部署"
+      ],
+      "excerpt": "Debian 13 工控机完整实施文档",
+      "thumb": "",
+      "tasksTotal": 8,
+      "tasksDone": 0,
+      "completion": 0
+    },
     {
       "title": "飞博虾",
       "url": "/tech/feiboxia/",
@@ -94,23 +113,6 @@
         "统计"
       ],
       "excerpt": "每篇博文自动统计（已启用） 仓库已接入 不蒜子 访问统计（国内可访问性更好）： - 页脚显示「本站 PV」 - 文章正文底部显示「本文阅读」（本页 PV） - 脚本加载失败时会显示「统计中」占位 脚本：docs/javascripts/visitor-badge.js 样式：do…",
-      "thumb": "",
-      "tasksTotal": 1,
-      "tasksDone": 1,
-      "completion": 100
-    },
-    {
-      "title": "评论配置",
-      "url": "/tech/giscus-setup/",
-      "path": "docs/tech/giscus-setup.md",
-      "date": "2026-07-23",
-      "nav": "技术",
-      "tags": [
-        "技术",
-        "建站",
-        "评论"
-      ],
-      "excerpt": "界面说明 文章底部评论区默认展示： - 游客（默认）：顶部表情墙 + Markdown 富文本编辑器 + 昵称 + 发布 - GitHub 账号：切换到 Giscus（含表情墙、输入/预览、GitHub 登录），与线上一致 无需先注册第三方服务即可在本地看到完整评论框。 --- …",
       "thumb": "",
       "tasksTotal": 1,
       "tasksDone": 1,

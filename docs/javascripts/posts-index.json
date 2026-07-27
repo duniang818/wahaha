@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T00:28:55.071Z",
+  "generatedAt": "2026-07-27T10:04:14.829Z",
   "navTags": [
     "博客",
     "教育",
@@ -8,6 +8,25 @@
     "飞博虾"
   ],
   "posts": [
+    {
+      "title": "Debian 13 工控机完整实施文档",
+      "url": "/tech/debian-ipc-setup/",
+      "path": "docs/tech/debian-ipc-setup.md",
+      "date": "2026-07-27",
+      "nav": "技术",
+      "tags": [
+        "技术",
+        "Debian",
+        "Docker",
+        "SSH",
+        "部署"
+      ],
+      "excerpt": "Debian 13 工控机完整实施文档",
+      "thumb": "",
+      "tasksTotal": 8,
+      "tasksDone": 0,
+      "completion": 0
+    },
     {
       "title": "飞博虾",
       "url": "/tech/feiboxia/",

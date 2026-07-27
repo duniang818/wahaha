@@ -438,7 +438,13 @@ export async function writeLocalMarkdown(payload, token) {
       "拉取正文失败（请将文档分享给应用，或本机 npm run feiboxia:ship）：",
       errors.join(" | ")
     );
-    return { wrote: false, slug, navDir, blogRel: null };
+    return {
+      wrote: false,
+      slug,
+      navDir,
+      blogRel: null,
+      fetchErrors: errors,
+    };
   }
 
   const parsed = markdownFromFeishu(content);
@@ -639,14 +645,21 @@ payload.nav_dir = writeResult.navDir || payload.nav_dir;
 
 job({ progress: 75, phase: "台账", message: "正在更新飞书台账…" });
 
+let ledgerError = "";
 if (token) {
-  await upsertLedger(token, payload, {
-    slug: payload.slug,
-    navDir: payload.nav_dir,
-    wroteMarkdown: writeResult.wrote,
-    unpublished: writeResult.unpublished,
-    platforms: payload.platforms,
-  });
+  try {
+    await upsertLedger(token, payload, {
+      slug: payload.slug,
+      navDir: payload.nav_dir,
+      wroteMarkdown: writeResult.wrote,
+      unpublished: writeResult.unpublished,
+      platforms: payload.platforms,
+    });
+  } catch (e) {
+    ledgerError = e?.message || String(e);
+    // 台账失败不应吞掉已成功的正文写入；权限不足时仅告警
+    console.warn("写台账失败（不影响博客正文）:", ledgerError);
+  }
 } else {
   console.warn("跳过 OpenAPI 写台账");
 }
@@ -701,24 +714,34 @@ if (
       status: "success",
       progress: 100,
       phase: "完成",
-      message: `已写入博客 ${payload.nav_dir}/${payload.slug}`,
+      message: ledgerError
+        ? `已写入博客 ${payload.nav_dir}/${payload.slug}（台账未更新：缺多维表格权限 bitable:app / base:record:create）`
+        : `已写入博客 ${payload.nav_dir}/${payload.slug}`,
       blogUrl,
       postUrl: blogUrl,
+      ledgerError: ledgerError || undefined,
     });
   } else {
     enqueueRetry(payload, {
       reason: "正文未写入（请分享文档给飞博虾应用）",
       blogUrl,
     });
+    const detail = Array.isArray(writeResult.fetchErrors)
+      ? writeResult.fetchErrors.join("；").slice(0, 400)
+      : "";
+    const hint =
+      "未能拉取飞书正文写入博客。请把该文档「分享」给飞博虾应用（可阅读），并确认 GitHub Secrets 中有 FEISHU_APP_ID/SECRET。";
     job({
       status: "failure",
       progress: 100,
       phase: "失败",
-      message: "未能拉取飞书正文写入博客；已加入今晚 21:00 重试队列",
+      message: detail ? `${hint} 详情：${detail}` : `${hint} 已加入今晚 21:00 重试队列`,
       blogUrl,
+      fetchErrors: writeResult.fetchErrors || [],
     });
     console.error(
-      "发布失败：未能从飞书拉取正文并写入 docs/。已加入今晚 21:00 重试队列。"
+      "发布失败：未能从飞书拉取正文并写入 docs/。已加入今晚 21:00 重试队列。",
+      detail
     );
     process.exit(1);
   }

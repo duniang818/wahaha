@@ -1,9 +1,37 @@
 {
-  "generatedAt": "2026-07-26T00:28:55.071Z",
+  "generatedAt": "2026-07-27T10:04:14.829Z",
   "rangeStart": "2024-01-01",
   "rangeEnd": "2026-12-31",
   "maxIntensity": 11,
   "days": {
+    "2026-07-27": {
+      "date": "2026-07-27",
+      "count": 1,
+      "tasksTotal": 8,
+      "tasksDone": 0,
+      "posts": [
+        {
+          "title": "Debian 13 工控机完整实施文档",
+          "url": "/tech/debian-ipc-setup/",
+          "path": "docs/tech/debian-ipc-setup.md",
+          "nav": "技术",
+          "tags": [
+            "技术",
+            "Debian",
+            "Docker",
+            "SSH",
+            "部署"
+          ],
+          "excerpt": "Debian 13 工控机完整实施文档",
+          "thumb": "",
+          "tasksTotal": 8,
+          "tasksDone": 0,
+          "completion": 0
+        }
+      ],
+      "completion": 0,
+      "intensity": 8
+    },
     "2026-07-24": {
       "date": "2026-07-24",
       "count": 3,
@@ -418,19 +446,20 @@
       "year": "2026",
       "months": {
         "2026-07": {
-          "intensity": 23,
-          "posts": 20
+          "intensity": 31,
+          "posts": 21
         }
       },
       "quarters": {
-        "2026-Q3": 23
+        "2026-Q3": 31
       },
       "weeks": {
+        "2026-W31": 8,
         "2026-W30": 23
       },
-      "days": 4,
-      "intensity": 23,
-      "posts": 20
+      "days": 5,
+      "intensity": 31,
+      "posts": 21
     }
   }
 }

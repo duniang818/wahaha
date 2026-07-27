@@ -218,11 +218,34 @@ function loadLocalDrafts(): Record<string, DocDraft> {
   }
 }
 
+function mergeDraftPreferFilled(prev: DocDraft | undefined, next: DocDraft): DocDraft {
+  if (!prev) return next;
+  const pickStr = (a: string | undefined, b: string | undefined) => {
+    const bt = (b || "").trim();
+    if (bt) return b || "";
+    return a || "";
+  };
+  return {
+    title: pickStr(prev.title, next.title),
+    nav: pickStr(prev.nav, next.nav) || "blog/posts",
+    slug: pickStr(prev.slug, next.slug),
+    tagsText: pickStr(prev.tagsText, next.tagsText),
+    selected:
+      next.selected?.length > 0
+        ? next.selected
+        : prev.selected?.length
+          ? prev.selected
+          : (["blog"] as PlatformId[]),
+    onlinePostUrl: pickStr(prev.onlinePostUrl, next.onlinePostUrl),
+    updatedAt: next.updatedAt || prev.updatedAt || new Date().toISOString(),
+  };
+}
+
 function saveLocalDraft(token: string, draft: DocDraft) {
   if (!token) return;
   try {
     const all = loadLocalDrafts();
-    all[token] = draft;
+    all[token] = mergeDraftPreferFilled(all[token], draft);
     // 最多保留 40 篇草稿，避免撑爆 localStorage
     const keys = Object.keys(all).sort(
       (a, b) => String(all[b].updatedAt).localeCompare(String(all[a].updatedAt))
@@ -387,9 +410,16 @@ function githubHeaders(pat: string) {
 
 async function fetchGithubFileContent(cfg: Cfg, repoPath: string): Promise<string | null> {
   if (!cfg.githubPat?.trim() || !cfg.githubRepo?.trim()) return null;
+  // 加 t= 避免 Contents API 缓存旧的 pending job
   const res = await fetch(
-    `https://api.github.com/repos/${cfg.githubRepo}/contents/${encodeURI(repoPath)}`,
-    { headers: githubHeaders(cfg.githubPat) }
+    `https://api.github.com/repos/${cfg.githubRepo}/contents/${encodeURI(repoPath)}?ref=main&t=${Date.now()}`,
+    {
+      headers: {
+        ...githubHeaders(cfg.githubPat),
+        "Cache-Control": "no-cache",
+      },
+      cache: "no-store",
+    }
   );
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GitHub ${res.status}`);
@@ -529,16 +559,27 @@ async function fetchRecentWorkflowRun(
     const res = await fetch(
       `https://api.github.com/repos/${cfg.githubRepo}/actions/workflows/${encodeURIComponent(
         workflowFile
-      )}/runs?event=repository_dispatch&per_page=8`,
-      { headers: githubHeaders(cfg.githubPat) }
+      )}/runs?event=repository_dispatch&per_page=15&t=${Date.now()}`,
+      {
+        headers: {
+          ...githubHeaders(cfg.githubPat),
+          "Cache-Control": "no-cache",
+        },
+        cache: "no-store",
+      }
     );
     if (!res.ok) return null;
     const j = (await res.json()) as { workflow_runs?: Array<Record<string, string>> };
     const since = new Date(sinceIso).getTime();
-    return (
-      (j.workflow_runs || []).find(r => new Date(String(r.created_at)).getTime() >= since - 5000) ||
-      null
-    );
+    const runs = j.workflow_runs || [];
+    // 优先精确匹配 dispatch 时间；找不到则取其后最近一次 completed（避免卡死排队）
+    const exact = runs.find(r => new Date(String(r.created_at)).getTime() >= since - 15_000);
+    if (exact) return exact;
+    const fallback = runs.find(r => {
+      const t = new Date(String(r.created_at)).getTime();
+      return t >= since - 120_000 && r.status === "completed";
+    });
+    return fallback || null;
   } catch {
     return null;
   }
@@ -565,89 +606,142 @@ async function pollJob(
   let completedStreak = 0;
 
   while (Date.now() < deadline) {
-    await new Promise(r => window.setTimeout(r, 3000));
-
-    const job = await fetchJobStatus(cfg, jobId);
-    if (job) {
-      last = job;
-      onUpdate(job);
-      if (job.status === "success" || job.status === "failure") return job;
-    }
+    await new Promise(r => window.setTimeout(r, 2500));
 
     const run = await fetchRecentWorkflowRun(cfg, workflowFile, dispatchAt);
+    const job = await fetchJobStatus(cfg, jobId);
+
+    // 终态：仅信任 success / failure；pending 绝不当完成态
+    if (job && (job.status === "success" || job.status === "failure")) {
+      onUpdate(job);
+      return job;
+    }
+
     if (run) {
       sawRun = true;
       if (run.status === "queued") {
         completedStreak = 0;
         last = {
-          ...last,
-          progress: Math.max(last.progress, 12),
+          jobId,
+          progress: Math.max(last.progress, job?.progress || 0, 12),
           phase: "排队中",
           status: "running",
           message: "Actions 排队中…",
+          cmd: last.cmd,
         };
       } else if (run.status === "in_progress" || run.status === "waiting") {
         completedStreak = 0;
         const elapsed = Date.now() - new Date(dispatchAt).getTime();
-        const est = Math.min(88, 22 + Math.floor(elapsed / 2500));
+        const est = Math.min(90, 25 + Math.floor(elapsed / 2000));
+        // 进行中：用 Actions 进度，不被仓库里旧的 pending(5%) 盖掉
+        const fromJob =
+          job && job.status === "running" ? job.progress : 0;
         last = {
-          ...last,
-          progress: Math.max(last.progress, est),
-          phase: "执行中",
+          jobId,
+          progress: Math.max(last.progress, fromJob, est),
+          phase: job?.status === "running" && job.phase ? job.phase : "执行中",
           status: "running",
-          message: runningHint,
+          message: job?.status === "running" && job.message ? job.message : runningHint,
+          cmd: last.cmd,
         };
       } else if (run.status === "completed") {
         completedStreak += 1;
-        if (run.conclusion === "failure" || run.conclusion === "cancelled" || run.conclusion === "timed_out") {
+        if (
+          run.conclusion === "failure" ||
+          run.conclusion === "cancelled" ||
+          run.conclusion === "timed_out"
+        ) {
+          // 再读一次最新 job；若仍是 pending 则合成失败，避免卡在「排队」
           const final = await fetchJobStatus(cfg, jobId);
-          if (final) return final;
-          return {
+          if (final && (final.status === "success" || final.status === "failure")) {
+            onUpdate(final);
+            return final;
+          }
+          const fail: JobTrack = {
             jobId,
             progress: 100,
             phase: "失败",
             status: "failure",
             message:
-              run.conclusion === "cancelled"
+              (final && final.status !== "pending" && final.message) ||
+              (run.conclusion === "cancelled"
                 ? "Actions 已取消"
-                : "Actions 执行失败，请查看日志",
+                : "发布失败：未能写入博客（常见原因：飞书文档未分享给飞博虾应用）。请打开 Actions 日志，或今晚 21:00 自动重试。"),
+            blogUrl: final?.blogUrl,
+            cmd: last.cmd,
           };
+          onUpdate(fail);
+          return fail;
         }
-        // success / 其它成功结论：再等 1~2 轮拿 job 文件；没有文件也结束，避免卡死在收尾
+
         const final = await fetchJobStatus(cfg, jobId);
         if (final && (final.status === "success" || final.status === "failure")) {
+          onUpdate(final);
           return final;
         }
         if (completedStreak >= 2) {
-          return {
+          const ok: JobTrack = {
             jobId,
             progress: 100,
             phase: "完成",
             status: "success",
-            message:
-              (final && final.message) ||
-              "Actions 已成功完成（任务详情稍后同步）",
+            message: (final && final.message) || "Actions 已成功完成",
             blogUrl: final?.blogUrl,
+            cmd: last.cmd,
           };
+          onUpdate(ok);
+          return ok;
         }
         last = {
-          ...last,
+          jobId,
           progress: 95,
           phase: "收尾",
           status: "running",
           message: "Actions 已结束，正在同步任务结果…",
+          cmd: last.cmd,
         };
       }
       onUpdate(last);
     } else if (!sawRun) {
+      // 尚无 run：可用 pending job 提示已受理，但标记为 running 避免误以为卡死
       const waited = Date.now() - new Date(dispatchAt).getTime();
-      if (waited > 90_000) {
+      if (job && job.status === "pending") {
+        last = {
+          ...job,
+          status: "running",
+          progress: Math.max(job.progress, waited > 60_000 ? 18 : 8),
+          phase: waited > 60_000 ? "等待中" : "已受理",
+          message:
+            waited > 60_000
+              ? "任务仍在 pending，可能 Actions 已失败但未回写。请打开 Actions 查看。"
+              : job.message || "任务已写入队列，等待 Actions 启动…",
+          cmd: last.cmd,
+        };
+        onUpdate(last);
+      }
+      // 超过 3 分钟仍无 run 且 job 仍 pending → 按失败结束，避免永久「排队」
+      if (waited > 180_000) {
+        const fail: JobTrack = {
+          jobId,
+          progress: 100,
+          phase: "失败",
+          status: "failure",
+          message:
+            "长时间未检测到对应 Actions 运行。请确认已 push 到 main、PAT 含 workflow，并打开 Actions 页查看。",
+          cmd: last.cmd,
+        };
+        onUpdate(fail);
+        return fail;
+      }
+      if (waited > 75_000) {
         last = {
           ...last,
           progress: Math.max(last.progress, 15),
           phase: "等待中",
           status: "running",
-          message: "尚未检测到 Actions 运行，请确认已 push 最新 workflow，或打开 Actions 页查看",
+          message:
+            "仍未检测到 Actions 运行。请打开 Actions 页确认；PAT 需含 workflow 权限。",
+          cmd: last.cmd,
         };
         onUpdate(last);
       }
@@ -660,8 +754,8 @@ async function pollJob(
     progress: 100,
     phase: "超时",
     message: sawRun
-      ? "等待任务结果超时，请到 Actions 查看是否已成功"
-      : "未检测到 Actions 运行（可能未 push 工作流，或 PAT 缺 workflow 权限）",
+      ? "等待任务结果超时，请到 Actions 查看是否已成功或失败"
+      : "未检测到 Actions 运行（PAT 缺 workflow，或未 push 工作流）",
   };
 }
 
@@ -882,25 +976,40 @@ export function App() {
 
   function schedulePersistDraft(overrides: Partial<DocDraft> = {}) {
     if (!docToken) return;
-    window.clearTimeout(draftTimer.current);
     const token = docToken;
+    const draft = buildDraft(overrides);
+    // 立即写 localStorage，防面板重挂载时丢字段
+    draftRef.current = {
+      title: draft.title,
+      nav: draft.nav,
+      slug: draft.slug,
+      tagsText: draft.tagsText,
+      selected: draft.selected,
+      onlinePostUrl: draft.onlinePostUrl,
+    };
+    saveLocalDraft(token, draft);
+    window.clearTimeout(draftTimer.current);
     draftTimer.current = window.setTimeout(() => {
-      void persistDocDraft(token, buildDraft(overrides));
-    }, 350);
+      void persistDocDraft(token, draft);
+    }, 450);
   }
 
   function resolveDraftForDoc(
     token: string,
     inter: Record<string, unknown> | null
   ): DocDraft | null {
-    const fromInter = (inter?.docDrafts as Record<string, DocDraft> | undefined)?.[token];
     const fromLocal = loadLocalDrafts()[token];
-    if (fromInter && fromLocal) {
-      return String(fromInter.updatedAt || "") >= String(fromLocal.updatedAt || "")
-        ? fromInter
-        : fromLocal;
+    const fromInter = (inter?.docDrafts as Record<string, DocDraft> | undefined)?.[token];
+    // localStorage 优先（飞书 Interaction 常丢字段）；时间戳更新时再用更新的
+    if (fromLocal && fromInter) {
+      const localNewer =
+        String(fromLocal.updatedAt || "") >= String(fromInter.updatedAt || "");
+      return mergeDraftPreferFilled(
+        localNewer ? fromInter : fromLocal,
+        localNewer ? fromLocal : fromInter
+      );
     }
-    return fromInter || fromLocal || null;
+    return fromLocal || fromInter || null;
   }
 
   async function applyDocBinding(c: Cfg, token: string) {
@@ -948,9 +1057,15 @@ export function App() {
   }, [status, docToken, linkedToDoc, docBinding, onlinePostUrl, orphanOnline]);
 
   async function refreshStatus(c: Cfg, n: string, s: string, token = docToken) {
+    // 发送/任务进行中不要把徽章刷成「未发布」
+    if (busyRef.current) {
+      setStatusDetail("任务进行中，完成后自动刷新发布状态…");
+      return;
+    }
     setStatus("unknown");
     setStatusDetail("正在检测发布状态…");
     const r = await detectPublishStatus(c, n, s, token);
+    if (busyRef.current) return;
     setStatus(r.status);
     setStatusDetail(r.detail);
     setLinkedToDoc(r.linkedToDoc);
@@ -979,6 +1094,29 @@ export function App() {
   useEffect(() => {
     busyRef.current = busy;
   }, [busy]);
+
+  function statusBadgeText(): string {
+    if (
+      busy &&
+      cmdJob &&
+      (cmdJob.status === "running" || cmdJob.status === "pending")
+    ) {
+      if (cmdJob.cmd === "send" || cmdJob.cmd === "republish") return "发送中";
+      if (cmdJob.cmd === "pull") return "拉取中";
+      if (cmdJob.cmd === "revoke") return "撤销中";
+      return "处理中";
+    }
+    if (cmdJob?.status === "failure") return "失败";
+    return STATUS_LABEL[status];
+  }
+
+  function statusBadgeClass(): string {
+    if (busy && cmdJob && (cmdJob.status === "running" || cmdJob.status === "pending")) {
+      return "unknown";
+    }
+    if (cmdJob?.status === "failure") return "never";
+    return status;
+  }
 
   useEffect(() => {
     collapsedRef.current = collapsed;
@@ -1044,13 +1182,21 @@ export function App() {
         setDocUrl(ctx.url);
         setDocToken(ctx.token);
 
-        const draft = resolveDraftForDoc(ctx.token, inter);
+        // 先读本地草稿 / 进行中任务，避免飞书标题与 map 冲掉用户填写
+        const activeEarly =
+          loadLocalActiveJob() ||
+          (inter?.activeJob as ActiveJobMeta | undefined) ||
+          null;
+        const draft =
+          (activeEarly?.docToken === ctx.token && activeEarly.draft) ||
+          resolveDraftForDoc(ctx.token, inter);
+
         const binding = await applyDocBinding(merged, ctx.token);
         const last = inter?.lastAction as
           | { nav?: string; title?: string; slug?: string; tags?: string }
           | undefined;
 
-        // 优先级：文档草稿 > feishu-map 绑定 > lastAction > 飞书标题/默认
+        // 优先级：进行中任务草稿 > 文档草稿 > feishu-map > lastAction > 飞书标题
         const startNav =
           draft?.nav ||
           binding?.navDir ||
@@ -1067,9 +1213,13 @@ export function App() {
           ) ||
           `post-${Date.now().toString(36)}`;
         const startTitle =
-          draft?.title || binding?.title || last?.title || ctx.title || "";
+          (draft?.title && draft.title.trim()) ||
+          binding?.title ||
+          last?.title ||
+          ctx.title ||
+          "";
         const startTags =
-          draft?.tagsText ||
+          (draft?.tagsText && draft.tagsText.trim()) ||
           (binding?.tags?.length ? binding.tags.join(",") : "") ||
           (typeof last?.tags === "string" ? last.tags : "") ||
           tagsForNav(startNav).join(",");
@@ -1081,8 +1231,7 @@ export function App() {
         if (draft?.selected?.length) setSelected(draft.selected);
         if (draft?.onlinePostUrl) setOnlinePostUrl(draft.onlinePostUrl);
 
-        // 把解析结果立刻落盘，保证下次打开一致
-        const hydrated = {
+        const hydrated: DocDraft = mergeDraftPreferFilled(draft || undefined, {
           title: startTitle,
           nav: startNav,
           slug: startSlug,
@@ -1090,7 +1239,8 @@ export function App() {
           selected: draft?.selected?.length ? draft.selected : (["blog"] as PlatformId[]),
           onlinePostUrl: draft?.onlinePostUrl || "",
           updatedAt: new Date().toISOString(),
-        };
+        });
+        // local 覆盖 inter，再写入当前文档草稿
         saveLocalDraft(ctx.token, hydrated);
         await saveInteractionPatch({
           feiboxiaCfg: merged,
@@ -1101,66 +1251,110 @@ export function App() {
           },
         });
 
-        await refreshStatus(merged, startNav, startSlug, ctx.token);
-
-        // 恢复进行中的发送任务进度
         const active =
-          (inter.activeJob as ActiveJobMeta | undefined) || loadLocalActiveJob();
-        if (
-          active &&
-          active.docToken === ctx.token &&
-          active.jobId &&
-          (active.cmd === "send" ||
-            active.cmd === "republish" ||
-            active.cmd === "pull" ||
-            active.cmd === "revoke")
-        ) {
-          setBusy(true);
-          setCmdJob({
-            jobId: active.jobId,
-            progress: 12,
-            phase: "恢复中",
-            status: "running",
-            message: "正在恢复任务进度…",
-            cmd: active.cmd,
-          });
-          setMsg(`正在恢复「${active.cmd}」进度…`);
-          const hints: Record<Cmd, string> = {
-            send: "正在拉取飞书正文并写入博客…",
-            republish: "正在拉取飞书正文并写入博客…",
-            pull: "正在绑定飞书文档与线上博文…",
-            revoke: "正在撤销线上博文…",
-          };
-          void pollJob(
-            merged,
-            active.jobId,
-            active.dispatchAt,
-            active.workflow,
-            hints[active.cmd],
-            j => setCmdJob({ ...j, cmd: active.cmd })
-          ).then(async result => {
-            setCmdJob({ ...result, cmd: active.cmd });
-            if (result.status === "success") {
-              setMsg(`✓ ${result.message || "任务已完成"}`);
-              if (active.cmd === "send" || active.cmd === "republish") {
-                setStatus("published");
-                setLinkedToDoc(true);
-                setStatusDetail(result.message || "已写入博客");
-              } else if (active.cmd === "pull") {
-                setLinkedToDoc(true);
-                setStatus("published");
-              } else if (active.cmd === "revoke") {
-                setStatus("never");
-                setLinkedToDoc(false);
-              }
-              void refreshStatus(merged, startNav, startSlug, ctx.token);
+          activeEarly &&
+          activeEarly.docToken === ctx.token &&
+          activeEarly.jobId &&
+          (activeEarly.cmd === "send" ||
+            activeEarly.cmd === "republish" ||
+            activeEarly.cmd === "pull" ||
+            activeEarly.cmd === "revoke")
+            ? activeEarly
+            : null;
+
+        // 过期任务（>20min）先读一次终态，避免永远「排队」
+        if (active) {
+          const age = Date.now() - new Date(active.dispatchAt).getTime();
+          if (age > 20 * 60 * 1000) {
+            const stale = await fetchJobStatus(merged, active.jobId);
+            if (stale && (stale.status === "success" || stale.status === "failure")) {
+              saveLocalActiveJob(null);
+              await saveInteractionPatch({ activeJob: null });
+              setCmdJob({ ...stale, cmd: active.cmd });
+              setMsg(
+                stale.status === "success"
+                  ? `✓ ${stale.message || "上次任务已完成"}`
+                  : `失败：${stale.message || "上次任务已失败"}`
+              );
+              await refreshStatus(merged, startNav, startSlug, ctx.token);
             } else {
-              setMsg(`失败：${result.message || "任务失败"}`);
+              saveLocalActiveJob(null);
+              await saveInteractionPatch({ activeJob: null });
+              setMsg("上次任务已超时清理，请重新发送。可打开 Actions 查看结果。");
+              await refreshStatus(merged, startNav, startSlug, ctx.token);
             }
-            saveLocalActiveJob(null);
-            await saveInteractionPatch({ activeJob: null });
-            setBusy(false);
-          });
+          } else {
+            // 任务进行中：不要用「未发布」覆盖发送态
+            setStatus("unknown");
+            setStatusDetail("任务进行中，完成后自动刷新发布状态…");
+            busyRef.current = true;
+            setBusy(true);
+            setCmdJob({
+              jobId: active.jobId,
+              progress: 12,
+              phase: "恢复中",
+              status: "running",
+              message: "正在恢复任务进度…",
+              cmd: active.cmd,
+            });
+            setMsg(`正在恢复「${active.cmd}」进度…`);
+            const hints: Record<Cmd, string> = {
+              send: "正在拉取飞书正文并写入博客…",
+              republish: "正在拉取飞书正文并写入博客…",
+              pull: "正在绑定飞书文档与线上博文…",
+              revoke: "正在撤销线上博文…",
+            };
+            void pollJob(
+              merged,
+              active.jobId,
+              active.dispatchAt,
+              active.workflow,
+              hints[active.cmd],
+              j => setCmdJob({ ...j, cmd: active.cmd })
+            ).then(async result => {
+              setCmdJob({ ...result, cmd: active.cmd });
+              // 恢复草稿字段（防止中途被别的逻辑改掉）
+              if (active.draft) {
+                setTitle(active.draft.title);
+                setNav(active.draft.nav);
+                setSlug(active.draft.slug);
+                setTagsText(active.draft.tagsText);
+                if (active.draft.selected?.length) setSelected(active.draft.selected);
+                void persistDocDraft(ctx.token, {
+                  ...active.draft,
+                  updatedAt: new Date().toISOString(),
+                });
+              }
+              if (result.status === "success") {
+                setMsg(`✓ ${result.message || "任务已完成"}`);
+                if (active.cmd === "send" || active.cmd === "republish") {
+                  setStatus("published");
+                  setLinkedToDoc(true);
+                  setStatusDetail(result.message || "已写入博客");
+                } else if (active.cmd === "pull") {
+                  setLinkedToDoc(true);
+                  setStatus("published");
+                } else if (active.cmd === "revoke") {
+                  setStatus("never");
+                  setLinkedToDoc(false);
+                }
+              } else {
+                setMsg(`失败：${result.message || "任务失败"}`);
+              }
+              saveLocalActiveJob(null);
+              await saveInteractionPatch({ activeJob: null });
+              busyRef.current = false;
+              setBusy(false);
+              void refreshStatus(
+                merged,
+                active.draft?.nav || startNav,
+                active.draft?.slug || startSlug,
+                ctx.token
+              );
+            });
+          }
+        } else {
+          await refreshStatus(merged, startNav, startSlug, ctx.token);
         }
 
         await setHostSizeReliable(PANEL_SIZE.w, PANEL_SIZE.h);
@@ -1356,6 +1550,7 @@ export function App() {
     const dispatchAt = new Date().toISOString();
 
     setBusy(true);
+    busyRef.current = true;
     const draftSnap = buildDraft();
     await persistDocDraft(docToken, draftSnap);
 
@@ -1500,6 +1695,7 @@ export function App() {
       saveLocalActiveJob(null);
       await saveInteractionPatch({ activeJob: null });
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   }
@@ -1640,7 +1836,7 @@ export function App() {
           <span className="host-strip-name">
             飞博<span>虾</span>
           </span>
-          <span className={`host-strip-st ${status}`}>{STATUS_LABEL[status]}</span>
+          <span className={`host-strip-st ${statusBadgeClass()}`}>{statusBadgeText()}</span>
         </div>
       </div>
     );
@@ -1678,7 +1874,7 @@ export function App() {
             </div>
           </div>
           <div className="hd-right">
-            <span className={`st ${status}`}>{STATUS_LABEL[status]}</span>
+            <span className={`st ${statusBadgeClass()}`}>{statusBadgeText()}</span>
             <button
               type="button"
               className={`act setup ${showSetup ? "on" : ""}`}
