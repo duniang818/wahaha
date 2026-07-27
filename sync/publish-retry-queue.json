@@ -4,15 +4,13 @@
       "id": "GIvtdaQM8oNVfhxywa3cnPXWnCr",
       "payload": {
         "action": "publish",
-        "title": "Debian 13 工控机完整实施文档",
+        "title": "debian-ipc-setup\n",
         "doc_url": "https://my.feishu.cn/docx/GIvtdaQM8oNVfhxywa3cnPXWnCr",
         "doc_token": "GIvtdaQM8oNVfhxywa3cnPXWnCr",
         "nav_dir": "tech",
         "slug": "debian-ipc-setup",
         "tags": "技术,Debian,Docker,SSH",
-        "platforms": "blog",
-        "base_token": "ADtHbOF0raWJj0stRApcfjjInLg",
-        "table_id": "tblfvnQ3mm7DlX9X"
+        "platforms": "blog"
       },
       "title": "Debian 13 工控机完整实施文档",
       "slug": "debian-ipc-setup",
@@ -20,7 +18,7 @@
       "blogUrl": "https://duniang818.github.io/wahaha/tech/debian-ipc-setup/",
       "state": "pending_retry",
       "failReason": "正文未写入（请分享文档给飞博虾应用）",
-      "failedAt": "2026-07-27T06:55:25.069Z",
+      "failedAt": "2026-07-27T07:12:45.243Z",
       "retryAt": "2026-07-27T13:00:00.000Z",
       "attempts": 0,
       "lastNotifyAt": null
