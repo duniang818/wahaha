@@ -1,17 +1,20 @@
 {
   "action": "publish",
-  "base_token": "ADtHbOF0raWJj0stRApcfjjInLg",
-  "doc_token": "BKfcdE0LEotl9FxcxGqckflendg",
-  "doc_url": "https://my.feishu.cn/docx/BKfcdE0LEotl9FxcxGqckflendg",
+  "doc_token": "GIvtdaQM8oNVfhxywa3cnPXWnCr",
+  "doc_url": "https://my.feishu.cn/docx/GIvtdaQM8oNVfhxywa3cnPXWnCr",
+  "job_id": "send-ms2y1apd-eorwi",
   "nav_dir": "tech",
   "platforms": "blog",
-  "slug": "windows11-github-debian",
+  "site_url": "https://duniang818.github.io/wahaha/",
+  "slug": "debian-ipc-setup",
+  "tags": "技术,Debian,Docker,SSH",
+  "title": "Debian 13 工控机完整实施文档",
+  "base_token": "ADtHbOF0raWJj0stRApcfjjInLg",
   "table_id": "tblfvnQ3mm7DlX9X",
-  "tags": "技术,Debian",
-  "title": "完整部署实施命令文档（Windows11 → GitHub → Debian 工控机）",
-  "resolvedSlug": "windows11-github-debian",
+  "jobId": "send-ms2y1apd-eorwi",
+  "resolvedSlug": "debian-ipc-setup",
   "wroteMarkdown": false,
   "unpublished": false,
   "blogRel": null,
-  "handledAt": "2026-07-24T06:32:59.801Z"
+  "handledAt": "2026-07-27T08:07:15.757Z"
 }
