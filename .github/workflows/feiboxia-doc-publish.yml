@@ -34,6 +34,7 @@ jobs:
           git add feiboxia/queue/jobs/
           if ! git diff --cached --quiet; then
             git commit -m "chore: 发布任务排队"
+            git pull --rebase --autostash origin main || git pull --rebase origin main || true
             git push
           fi
 
@@ -80,6 +81,7 @@ jobs:
           git add sync/publish-retry-queue.json feiboxia/queue/jobs/ feiboxia/queue/doc-dispatch.last.json
           if ! git diff --cached --quiet; then
             git commit -m "chore: 发布任务状态"
+            git pull --rebase --autostash origin main || git pull --rebase origin main || true
             git push
           fi
 
@@ -95,6 +97,7 @@ jobs:
           git config user.email "feiboxia@users.noreply.github.com"
           git add docs sync/feishu-map.json docs/javascripts/posts-index.json docs/javascripts/posts-index-preview.json docs/javascripts/calendar-index.json
           git commit -m "docs: 飞博虾文档内发布"
+          git pull --rebase --autostash origin main || git pull --rebase origin main || true
           git push
 
       - name: Fail if publish failed

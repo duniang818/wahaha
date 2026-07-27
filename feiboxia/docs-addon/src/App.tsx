@@ -25,6 +25,27 @@ type JobTrack = {
   cmd?: Cmd | "md-import";
 };
 
+/** 按飞书文档 token 持久化的发布参数草稿 */
+type DocDraft = {
+  title: string;
+  nav: string;
+  slug: string;
+  tagsText: string;
+  selected: PlatformId[];
+  onlinePostUrl: string;
+  updatedAt: string;
+};
+
+/** 进行中的 Actions 任务（重开面板可恢复进度） */
+type ActiveJobMeta = {
+  jobId: string;
+  cmd: Cmd;
+  dispatchAt: string;
+  workflow: string;
+  docToken: string;
+  draft: DocDraft;
+};
+
 type Cfg = {
   baseToken: string;
   tableId: string;
@@ -88,6 +109,8 @@ const DEFAULT_CFG: Cfg = {
 };
 
 const LS_KEY = "feiboxia_addon_cfg_v1";
+const LS_DRAFTS = "feiboxia_doc_drafts_v1";
+const LS_ACTIVE_JOB = "feiboxia_active_job_v1";
 const KNOWN_DOC_SLUGS: Record<string, string> = {
   OGj3dcxuxowNetxgQudc771znhr: "feishu-oneclick-test",
   NvC5dYXOco8X28xnCbScFQXnnng: "feishu-github-blog-guide",
@@ -179,6 +202,55 @@ function loadLocalCfg(): Partial<Cfg> {
 function saveLocalCfg(cfg: Cfg) {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify(cfg));
+  } catch {
+    /* ignore */
+  }
+}
+
+function loadLocalDrafts(): Record<string, DocDraft> {
+  try {
+    const raw = localStorage.getItem(LS_DRAFTS);
+    if (!raw) return {};
+    const j = JSON.parse(raw) as Record<string, DocDraft>;
+    return j && typeof j === "object" ? j : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalDraft(token: string, draft: DocDraft) {
+  if (!token) return;
+  try {
+    const all = loadLocalDrafts();
+    all[token] = draft;
+    // 最多保留 40 篇草稿，避免撑爆 localStorage
+    const keys = Object.keys(all).sort(
+      (a, b) => String(all[b].updatedAt).localeCompare(String(all[a].updatedAt))
+    );
+    const trimmed: Record<string, DocDraft> = {};
+    keys.slice(0, 40).forEach(k => {
+      trimmed[k] = all[k];
+    });
+    localStorage.setItem(LS_DRAFTS, JSON.stringify(trimmed));
+  } catch {
+    /* ignore */
+  }
+}
+
+function loadLocalActiveJob(): ActiveJobMeta | null {
+  try {
+    const raw = localStorage.getItem(LS_ACTIVE_JOB);
+    if (!raw) return null;
+    return JSON.parse(raw) as ActiveJobMeta;
+  } catch {
+    return null;
+  }
+}
+
+function saveLocalActiveJob(job: ActiveJobMeta | null) {
+  try {
+    if (!job) localStorage.removeItem(LS_ACTIVE_JOB);
+    else localStorage.setItem(LS_ACTIVE_JOB, JSON.stringify(job));
   } catch {
     /* ignore */
   }
@@ -489,6 +561,8 @@ async function pollJob(
     message: "等待 GitHub Actions 启动…",
   };
   onUpdate(last);
+  let sawRun = false;
+  let completedStreak = 0;
 
   while (Date.now() < deadline) {
     await new Promise(r => window.setTimeout(r, 3000));
@@ -502,7 +576,9 @@ async function pollJob(
 
     const run = await fetchRecentWorkflowRun(cfg, workflowFile, dispatchAt);
     if (run) {
+      sawRun = true;
       if (run.status === "queued") {
+        completedStreak = 0;
         last = {
           ...last,
           progress: Math.max(last.progress, 12),
@@ -510,7 +586,8 @@ async function pollJob(
           status: "running",
           message: "Actions 排队中…",
         };
-      } else if (run.status === "in_progress") {
+      } else if (run.status === "in_progress" || run.status === "waiting") {
+        completedStreak = 0;
         const elapsed = Date.now() - new Date(dispatchAt).getTime();
         const est = Math.min(88, 22 + Math.floor(elapsed / 2500));
         last = {
@@ -521,7 +598,8 @@ async function pollJob(
           message: runningHint,
         };
       } else if (run.status === "completed") {
-        if (run.conclusion === "failure") {
+        completedStreak += 1;
+        if (run.conclusion === "failure" || run.conclusion === "cancelled" || run.conclusion === "timed_out") {
           const final = await fetchJobStatus(cfg, jobId);
           if (final) return final;
           return {
@@ -529,20 +607,50 @@ async function pollJob(
             progress: 100,
             phase: "失败",
             status: "failure",
-            message: "Actions 执行失败，请查看日志",
+            message:
+              run.conclusion === "cancelled"
+                ? "Actions 已取消"
+                : "Actions 执行失败，请查看日志",
           };
         }
+        // success / 其它成功结论：再等 1~2 轮拿 job 文件；没有文件也结束，避免卡死在收尾
         const final = await fetchJobStatus(cfg, jobId);
-        if (final) return final;
+        if (final && (final.status === "success" || final.status === "failure")) {
+          return final;
+        }
+        if (completedStreak >= 2) {
+          return {
+            jobId,
+            progress: 100,
+            phase: "完成",
+            status: "success",
+            message:
+              (final && final.message) ||
+              "Actions 已成功完成（任务详情稍后同步）",
+            blogUrl: final?.blogUrl,
+          };
+        }
         last = {
           ...last,
           progress: 95,
           phase: "收尾",
           status: "running",
-          message: "正在同步任务结果…",
+          message: "Actions 已结束，正在同步任务结果…",
         };
       }
       onUpdate(last);
+    } else if (!sawRun) {
+      const waited = Date.now() - new Date(dispatchAt).getTime();
+      if (waited > 90_000) {
+        last = {
+          ...last,
+          progress: Math.max(last.progress, 15),
+          phase: "等待中",
+          status: "running",
+          message: "尚未检测到 Actions 运行，请确认已 push 最新 workflow，或打开 Actions 页查看",
+        };
+        onUpdate(last);
+      }
     }
   }
 
@@ -551,7 +659,9 @@ async function pollJob(
     status: "failure",
     progress: 100,
     phase: "超时",
-    message: "等待超时，请到 Actions 查看",
+    message: sawRun
+      ? "等待任务结果超时，请到 Actions 查看是否已成功"
+      : "未检测到 Actions 运行（可能未 push 工作流，或 PAT 缺 workflow 权限）",
   };
 }
 
@@ -710,9 +820,94 @@ export function App() {
   const pinOpen = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cfgSnapshot = useRef<Cfg | null>(null);
+  /** Interaction 全量快照：每次写入必须合并，避免冲掉草稿/任务 */
+  const interRef = useRef<Record<string, unknown>>({});
+  const draftTimer = useRef(0);
+  const draftRef = useRef({
+    title: "",
+    nav: "blog/posts",
+    slug: "",
+    tagsText: tagsForNav("blog/posts").join(","),
+    selected: ["blog"] as PlatformId[],
+    onlinePostUrl: "",
+  });
+
+  useEffect(() => {
+    draftRef.current = { title, nav, slug, tagsText, selected, onlinePostUrl };
+  }, [title, nav, slug, tagsText, selected, onlinePostUrl]);
 
   const blogReady = platformReady(cfg, "blog");
   const navs = cfg.navs?.length ? cfg.navs : DEFAULT_NAVS;
+
+  function buildDraft(overrides: Partial<DocDraft> = {}): DocDraft {
+    return {
+      ...draftRef.current,
+      updatedAt: new Date().toISOString(),
+      ...overrides,
+    };
+  }
+
+  async function saveInteractionPatch(patch: Record<string, unknown>) {
+    const next = {
+      ...interRef.current,
+      ...patch,
+      savedAt: new Date().toISOString(),
+    };
+    interRef.current = next;
+    await persistInteraction(next);
+    return next;
+  }
+
+  async function persistDocDraft(
+    token = docToken,
+    draft = buildDraft()
+  ) {
+    if (!token) return;
+    draftRef.current = {
+      title: draft.title,
+      nav: draft.nav,
+      slug: draft.slug,
+      tagsText: draft.tagsText,
+      selected: draft.selected,
+      onlinePostUrl: draft.onlinePostUrl,
+    };
+    saveLocalDraft(token, draft);
+    const drafts = {
+      ...((interRef.current.docDrafts as Record<string, DocDraft>) || {}),
+      ...loadLocalDrafts(),
+      [token]: draft,
+    };
+    await saveInteractionPatch({ docDrafts: drafts });
+  }
+
+  function schedulePersistDraft(overrides: Partial<DocDraft> = {}) {
+    if (!docToken) return;
+    window.clearTimeout(draftTimer.current);
+    const token = docToken;
+    draftTimer.current = window.setTimeout(() => {
+      void persistDocDraft(token, buildDraft(overrides));
+    }, 350);
+  }
+
+  function resolveDraftForDoc(
+    token: string,
+    inter: Record<string, unknown> | null
+  ): DocDraft | null {
+    const fromInter = (inter?.docDrafts as Record<string, DocDraft> | undefined)?.[token];
+    const fromLocal = loadLocalDrafts()[token];
+    if (fromInter && fromLocal) {
+      return String(fromInter.updatedAt || "") >= String(fromLocal.updatedAt || "")
+        ? fromInter
+        : fromLocal;
+    }
+    return fromInter || fromLocal || null;
+  }
+
+  async function applyDocBinding(c: Cfg, token: string) {
+    const binding = await resolveDocBinding(c, token);
+    setDocBinding(binding);
+    return binding;
+  }
 
   const postUrl = useMemo(
     () =>
@@ -752,20 +947,6 @@ export function App() {
     };
   }, [status, docToken, linkedToDoc, docBinding, onlinePostUrl, orphanOnline]);
 
-  async function applyDocBinding(c: Cfg, token: string) {
-    const binding = await resolveDocBinding(c, token);
-    if (binding) {
-      setDocBinding(binding);
-      setNav(binding.navDir);
-      setSlug(binding.slug);
-      setTagsText(binding.tags.join(","));
-      if (binding.title) setTitle(prev => prev || binding.title!);
-      return binding;
-    }
-    setDocBinding(null);
-    return null;
-  }
-
   async function refreshStatus(c: Cfg, n: string, s: string, token = docToken) {
     setStatus("unknown");
     setStatusDetail("正在检测发布状态…");
@@ -788,7 +969,8 @@ export function App() {
     }
     const r = await detectOnlineByUrl(c, u, token);
     setOrphanOnline({ exists: r.exists, linkedToCurrent: r.linkedToCurrent });
-    if (r.exists && r.parsed && !r.linkedToCurrent) {
+    // 仅在无草稿、且确认为「孤儿线上文」时回填栏目/slug，避免冲掉用户已保存参数
+    if (r.exists && r.parsed && !r.linkedToCurrent && !resolveDraftForDoc(token, interRef.current)) {
       setNav(r.parsed.navDir);
       setSlug(r.parsed.slug);
     }
@@ -825,6 +1007,7 @@ export function App() {
 
   function onBlurField() {
     pinOpen.current = false;
+    schedulePersistDraft();
   }
 
   function onScrollPanel() {
@@ -841,7 +1024,8 @@ export function App() {
 
       try {
         const local = loadLocalCfg();
-        const inter = await readInteraction();
+        const inter = (await readInteraction()) || {};
+        interRef.current = { ...inter };
         const fromInter = (inter?.feiboxiaCfg || {}) as Partial<Cfg>;
         const merged: Cfg = {
           ...DEFAULT_CFG,
@@ -857,27 +1041,128 @@ export function App() {
         }
 
         const ctx = await readDocContext();
-        setTitle(ctx.title);
         setDocUrl(ctx.url);
         setDocToken(ctx.token);
-        const fallbackSlug =
-          slugify(ctx.title, ctx.token ? `doc-${ctx.token.slice(0, 10)}` : "") ||
-          `post-${Date.now().toString(36)}`;
 
+        const draft = resolveDraftForDoc(ctx.token, inter);
         const binding = await applyDocBinding(merged, ctx.token);
-        const last = inter?.lastAction as { nav?: string } | undefined;
-        const startNav =
-          binding?.navDir ||
-          (last?.nav && merged.navs?.includes(last.nav) ? last.nav : "blog/posts");
-        const startSlug = binding?.slug || KNOWN_DOC_SLUGS[ctx.token] || fallbackSlug;
+        const last = inter?.lastAction as
+          | { nav?: string; title?: string; slug?: string; tags?: string }
+          | undefined;
 
-        if (!binding) {
-          setNav(startNav);
-          setSlug(startSlug);
-          setTagsText(tagsForNav(startNav).join(","));
-        }
+        // 优先级：文档草稿 > feishu-map 绑定 > lastAction > 飞书标题/默认
+        const startNav =
+          draft?.nav ||
+          binding?.navDir ||
+          (last?.nav && merged.navs?.includes(last.nav) ? last.nav : "") ||
+          "blog/posts";
+        const startSlug =
+          draft?.slug ||
+          binding?.slug ||
+          last?.slug ||
+          KNOWN_DOC_SLUGS[ctx.token] ||
+          slugify(
+            draft?.title || binding?.title || ctx.title,
+            ctx.token ? `doc-${ctx.token.slice(0, 10)}` : ""
+          ) ||
+          `post-${Date.now().toString(36)}`;
+        const startTitle =
+          draft?.title || binding?.title || last?.title || ctx.title || "";
+        const startTags =
+          draft?.tagsText ||
+          (binding?.tags?.length ? binding.tags.join(",") : "") ||
+          (typeof last?.tags === "string" ? last.tags : "") ||
+          tagsForNav(startNav).join(",");
+
+        setTitle(startTitle);
+        setNav(startNav);
+        setSlug(startSlug);
+        setTagsText(startTags);
+        if (draft?.selected?.length) setSelected(draft.selected);
+        if (draft?.onlinePostUrl) setOnlinePostUrl(draft.onlinePostUrl);
+
+        // 把解析结果立刻落盘，保证下次打开一致
+        const hydrated = {
+          title: startTitle,
+          nav: startNav,
+          slug: startSlug,
+          tagsText: startTags,
+          selected: draft?.selected?.length ? draft.selected : (["blog"] as PlatformId[]),
+          onlinePostUrl: draft?.onlinePostUrl || "",
+          updatedAt: new Date().toISOString(),
+        };
+        saveLocalDraft(ctx.token, hydrated);
+        await saveInteractionPatch({
+          feiboxiaCfg: merged,
+          docDrafts: {
+            ...((inter.docDrafts as Record<string, DocDraft>) || {}),
+            ...loadLocalDrafts(),
+            [ctx.token]: hydrated,
+          },
+        });
 
         await refreshStatus(merged, startNav, startSlug, ctx.token);
+
+        // 恢复进行中的发送任务进度
+        const active =
+          (inter.activeJob as ActiveJobMeta | undefined) || loadLocalActiveJob();
+        if (
+          active &&
+          active.docToken === ctx.token &&
+          active.jobId &&
+          (active.cmd === "send" ||
+            active.cmd === "republish" ||
+            active.cmd === "pull" ||
+            active.cmd === "revoke")
+        ) {
+          setBusy(true);
+          setCmdJob({
+            jobId: active.jobId,
+            progress: 12,
+            phase: "恢复中",
+            status: "running",
+            message: "正在恢复任务进度…",
+            cmd: active.cmd,
+          });
+          setMsg(`正在恢复「${active.cmd}」进度…`);
+          const hints: Record<Cmd, string> = {
+            send: "正在拉取飞书正文并写入博客…",
+            republish: "正在拉取飞书正文并写入博客…",
+            pull: "正在绑定飞书文档与线上博文…",
+            revoke: "正在撤销线上博文…",
+          };
+          void pollJob(
+            merged,
+            active.jobId,
+            active.dispatchAt,
+            active.workflow,
+            hints[active.cmd],
+            j => setCmdJob({ ...j, cmd: active.cmd })
+          ).then(async result => {
+            setCmdJob({ ...result, cmd: active.cmd });
+            if (result.status === "success") {
+              setMsg(`✓ ${result.message || "任务已完成"}`);
+              if (active.cmd === "send" || active.cmd === "republish") {
+                setStatus("published");
+                setLinkedToDoc(true);
+                setStatusDetail(result.message || "已写入博客");
+              } else if (active.cmd === "pull") {
+                setLinkedToDoc(true);
+                setStatus("published");
+              } else if (active.cmd === "revoke") {
+                setStatus("never");
+                setLinkedToDoc(false);
+              }
+              void refreshStatus(merged, startNav, startSlug, ctx.token);
+            } else {
+              setMsg(`失败：${result.message || "任务失败"}`);
+            }
+            saveLocalActiveJob(null);
+            await saveInteractionPatch({ activeJob: null });
+            setBusy(false);
+          });
+        }
+
         await setHostSizeReliable(PANEL_SIZE.w, PANEL_SIZE.h);
       } catch (e: any) {
         setMsg(`初始化失败：${e?.message || e}`);
@@ -911,9 +1196,8 @@ export function App() {
   async function saveCfg(next: Cfg) {
     setCfg(next);
     saveLocalCfg(next);
-    await persistInteraction({
+    await saveInteractionPatch({
       feiboxiaCfg: next,
-      savedAt: new Date().toISOString(),
     });
     setMsg("✓ 设置已保存");
     closeSetup(true);
@@ -938,9 +1222,11 @@ export function App() {
   }
 
   function togglePlat(id: PlatformId) {
-    setSelected(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
+    setSelected(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      schedulePersistDraft({ selected: next });
+      return next;
+    });
   }
 
   function addNav() {
@@ -1070,6 +1356,24 @@ export function App() {
     const dispatchAt = new Date().toISOString();
 
     setBusy(true);
+    const draftSnap = buildDraft();
+    await persistDocDraft(docToken, draftSnap);
+
+    const workflow =
+      cmd === "pull" || cmd === "revoke"
+        ? "feiboxia-doc-manage.yml"
+        : "feiboxia-doc-publish.yml";
+    const activeMeta: ActiveJobMeta = {
+      jobId,
+      cmd,
+      dispatchAt,
+      workflow,
+      docToken,
+      draft: draftSnap,
+    };
+    saveLocalActiveJob(activeMeta);
+    await saveInteractionPatch({ activeJob: activeMeta });
+
     setCmdJob({
       jobId,
       progress: 8,
@@ -1109,9 +1413,23 @@ export function App() {
             setLinkedToDoc(false);
           }
           setMsg(`✓ ${result.message || labels[cmd] + "成功"}`);
+          await saveInteractionPatch({
+            lastAction: {
+              at: new Date().toISOString(),
+              action: cmd,
+              title: draftSnap.title,
+              nav: draftSnap.nav,
+              slug: draftSnap.slug,
+              tags: draftSnap.tagsText,
+              status: result.status,
+            },
+            activeJob: null,
+          });
         } else {
           setMsg(`失败：${result.message || labels[cmd] + "失败"}`);
+          await saveInteractionPatch({ activeJob: null });
         }
+        saveLocalActiveJob(null);
         return;
       }
 
@@ -1119,14 +1437,15 @@ export function App() {
       // client_payload 最多 10 字段：base_token/table_id 由 CI 默认值补齐
       await dispatchGithub("feiboxia-doc-publish", {
         action,
-        title,
+        title: draftSnap.title,
         doc_url: docUrl,
         doc_token: docToken,
-        nav_dir: nav,
+        nav_dir: draftSnap.nav,
         slug:
-          slug || slugify(title, docToken ? `doc-${docToken.slice(0, 10)}` : ""),
-        platforms: selected.join(","),
-        tags: tagsPayload() || tagsForNav(nav).join(","),
+          draftSnap.slug ||
+          slugify(draftSnap.title, docToken ? `doc-${docToken.slice(0, 10)}` : ""),
+        platforms: draftSnap.selected.join(","),
+        tags: draftSnap.tagsText || tagsForNav(draftSnap.nav).join(","),
         job_id: jobId,
         site_url: cfg.siteUrl,
       });
@@ -1145,23 +1464,26 @@ export function App() {
         setLinkedToDoc(true);
         setStatusDetail(result.message || "已写入博客");
         setMsg(`✓ ${result.message || labels[cmd] + "成功"}`);
-        await persistInteraction({
-          feiboxiaCfg: cfg,
+        await saveInteractionPatch({
           lastAction: {
             at: new Date().toISOString(),
             action,
-            platforms: selected.join(","),
-            title,
+            platforms: draftSnap.selected.join(","),
+            title: draftSnap.title,
             postUrl: result.blogUrl || postUrl,
-            nav,
-            slug,
+            nav: draftSnap.nav,
+            slug: draftSnap.slug,
+            tags: draftSnap.tagsText,
             status: "published",
           },
+          activeJob: null,
         });
-        void refreshStatus(cfg, nav, slug);
+        void refreshStatus(cfg, draftSnap.nav, draftSnap.slug);
       } else {
         setMsg(`失败：${result.message || labels[cmd] + "失败"}`);
+        await saveInteractionPatch({ activeJob: null });
       }
+      saveLocalActiveJob(null);
     } catch (e: any) {
       setCmdJob(prev =>
         prev
@@ -1175,6 +1497,8 @@ export function App() {
           : null
       );
       setMsg(`失败：${e?.message || e}`);
+      saveLocalActiveJob(null);
+      await saveInteractionPatch({ activeJob: null });
     } finally {
       setBusy(false);
     }
@@ -1476,7 +1800,11 @@ export function App() {
             <label>线上博文 URL（无绑定时填，用于拉取/撤销）</label>
             <input
               value={onlinePostUrl}
-              onChange={e => setOnlinePostUrl(e.target.value)}
+              onChange={e => {
+                const v = e.target.value;
+                setOnlinePostUrl(v);
+                schedulePersistDraft({ onlinePostUrl: v });
+              }}
               onFocus={onFocusField}
               onBlur={() => {
                 onBlurField();
@@ -1506,7 +1834,11 @@ export function App() {
             <label>标题</label>
             <input
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={e => {
+                const v = e.target.value;
+                setTitle(v);
+                schedulePersistDraft({ title: v });
+              }}
               onFocus={onFocusField}
               onBlur={onBlurField}
             />
@@ -1563,9 +1895,11 @@ export function App() {
                 value={nav}
                 onChange={e => {
                   const v = e.target.value;
+                  const nextTags = tagsForNav(v).join(",");
                   setNav(v);
-                  setTagsText(tagsForNav(v).join(","));
+                  setTagsText(nextTags);
                   void refreshStatus(cfg, v, slug);
+                  void persistDocDraft(docToken, buildDraft({ nav: v, tagsText: nextTags }));
                 }}
                 onFocus={onFocusField}
                 onBlur={onBlurField}
@@ -1581,7 +1915,11 @@ export function App() {
             <label>文档标签（与栏目一致，可改）</label>
             <input
               value={tagsText}
-              onChange={e => setTagsText(e.target.value)}
+              onChange={e => {
+                const v = e.target.value;
+                setTagsText(v);
+                schedulePersistDraft({ tagsText: v });
+              }}
               onFocus={onFocusField}
               onBlur={onBlurField}
               placeholder="教育,飞博虾"
@@ -1590,7 +1928,11 @@ export function App() {
             <label>slug</label>
             <input
               value={slug}
-              onChange={e => setSlug(e.target.value)}
+              onChange={e => {
+                const v = e.target.value;
+                setSlug(v);
+                schedulePersistDraft({ slug: v });
+              }}
               onFocus={onFocusField}
               onBlur={() => {
                 onBlurField();
@@ -1619,8 +1961,9 @@ export function App() {
                 type="button"
                 className="chip"
                 onClick={() => {
-                  void applyDocBinding(cfg, docToken).then(b => {
-                    void refreshStatus(cfg, b?.navDir || nav, b?.slug || slug);
+                  // 刷新状态时保留当前草稿参数，只更新发布状态
+                  void applyDocBinding(cfg, docToken).then(() => {
+                    void refreshStatus(cfg, nav, slug);
                   });
                   void refreshOrphanUrl(onlinePostUrl);
                 }}
