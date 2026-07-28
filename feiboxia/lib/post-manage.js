@@ -152,9 +152,13 @@ export function movePost({ slug, docUrl, docToken, navDir, tags }) {
 
   fs.mkdirSync(path.dirname(newFile), { recursive: true });
   fs.writeFileSync(newFile, content, "utf8");
-  if (newFile !== hit.file) fs.unlinkSync(hit.file);
+  if (path.resolve(newFile) !== path.resolve(hit.file)) fs.unlinkSync(hit.file);
 
-  if (fs.existsSync(oldAsset)) {
+  // 同路径时不可先删再 rename（会把自己删掉后 ENOENT）
+  if (
+    fs.existsSync(oldAsset) &&
+    path.resolve(oldAsset) !== path.resolve(newAsset)
+  ) {
     fs.mkdirSync(path.dirname(newAsset), { recursive: true });
     if (fs.existsSync(newAsset)) rmDirSafe(newAsset);
     fs.renameSync(oldAsset, newAsset);

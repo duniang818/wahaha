@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   evening-retry:
@@ -39,9 +40,11 @@ jobs:
         run: node feiboxia/ci-doc-retry.mjs
 
       - name: Commit docs if changed
+        id: docs
         run: |
           if git diff --quiet docs sync/feishu-map.json 2>/dev/null && git diff --cached --quiet docs sync/feishu-map.json 2>/dev/null; then
             echo "No doc file changes — skip commit"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             node scripts/build-posts-index.mjs
             git config user.name "feiboxia-bot"
@@ -49,13 +52,24 @@ jobs:
             git add docs sync/feishu-map.json docs/javascripts/posts-index.json docs/javascripts/posts-index-preview.json
             git commit -m "docs: 飞博虾晚间重试发布"
             git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Trigger Pages deploy
+        if: steps.docs.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref main
 
       - name: Commit retry queue
         run: |
           git config user.name "feiboxia-bot"
           git config user.email "feiboxia@users.noreply.github.com"
-          git add sync/publish-retry-queue.json feiboxia/queue/doc-retry.last.json
+          git add sync/publish-retry-queue.json
+          # doc-retry.last.json 可能尚未生成，避免 pathspec 导致整步失败
+          if [ -f feiboxia/queue/doc-retry.last.json ]; then
+            git add feiboxia/queue/doc-retry.last.json
+          fi
           if ! git diff --cached --quiet; then
             git commit -m "chore: 更新发布重试队列"
             git push

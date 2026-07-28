@@ -487,6 +487,7 @@ export async function writeLocalMarkdown(payload, token) {
         ...(map[docId] || {}),
         slug,
         path: built.rel,
+        navDir,
         title,
         url: payload.doc_url,
         updatedAt: new Date().toISOString(),
