@@ -1,6 +1,5 @@
 ---
-title: "从零开发飞书云文档小组件：飞博虾踩坑实录
-"
+title: 从零开发飞书云文档小组件：飞博虾踩坑实录
 author: 渡娘
 date: 2026-07-28
 visibility: public
