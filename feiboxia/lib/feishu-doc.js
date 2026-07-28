@@ -135,6 +135,15 @@ export async function fetchDocBlocksMarkdown(token, docUrlOrToken, { slug, navDi
   let imgIdx = 0;
   const lines = [];
 
+  function collectPlainText(blockId, acc = []) {
+    const block = blockMap.get(blockId);
+    if (!block) return acc;
+    const t = textRuns(block);
+    if (t) acc.push(t);
+    for (const cid of block.children || []) collectPlainText(cid, acc);
+    return acc;
+  }
+
   async function walk(blockId, depth = 0) {
     const block = blockMap.get(blockId);
     if (!block) return;
@@ -149,13 +158,51 @@ export async function fetchDocBlocksMarkdown(token, docUrlOrToken, { slug, navDi
     } else if (type === 13) {
       lines.push(t ? `1. ${t}` : "1.");
     } else if (type === 14) {
-      lines.push("```", t, "```");
+      // 飞书代码块正文常在子 block；先收集再闭合 fence，避免空 ```
+      const fromChildren = (block.children || [])
+        .flatMap(cid => collectPlainText(cid))
+        .join("\n");
+      const code = (t.trim() ? t : fromChildren).replace(/\s+$/, "");
+      const lang = block.code?.style?.language
+        ? String(block.code.style.language).toLowerCase()
+        : "";
+      lines.push(`\`\`\`${lang}`.trimEnd(), code, "```");
+      return; // 子节点已并入代码，勿再当正文输出
     } else if (type === 15) {
       lines.push(`> ${t}`);
     } else if (type === 17) {
       lines.push(`- [ ] ${t}`);
     } else if (type === 22) {
       lines.push("---");
+    } else if (type === 31) {
+      // 简单表格：按行列拼 markdown table
+      const table = block.table;
+      const rows = table?.cells || block.children || [];
+      // 走 children：飞书 table 的 children 是 cell block ids
+      const cellIds = block.children || [];
+      if (cellIds.length && table?.property) {
+        const colSize = table.property.column_size || 1;
+        const rowSize = table.property.row_size || Math.ceil(cellIds.length / colSize);
+        const cells = cellIds.map(id => collectPlainText(id).join(" ").replace(/\|/g, "\\|").trim());
+        const grid = [];
+        for (let r = 0; r < rowSize; r++) {
+          grid.push(cells.slice(r * colSize, (r + 1) * colSize));
+        }
+        if (grid.length) {
+          const header = grid[0];
+          const pad = colSize - header.length;
+          if (pad > 0) header.push(...Array(pad).fill(""));
+          lines.push(
+            `| ${header.join(" | ")} |`,
+            `| ${header.map(() => "---").join(" | ")} |`,
+            ...grid.slice(1).map(row => {
+              while (row.length < colSize) row.push("");
+              return `| ${row.join(" | ")} |`;
+            })
+          );
+        }
+        return;
+      }
     } else if (type === 27 && block.image?.token) {
       try {
         const { buf, type: ct } = await downloadFeishuMedia(token, block.image.token, docId);
@@ -169,6 +216,7 @@ export async function fetchDocBlocksMarkdown(token, docUrlOrToken, { slug, navDi
       } catch {
         lines.push("<!-- 图片下载失败 -->");
       }
+      return;
     } else if (type === 2 && t.trim()) {
       lines.push(t);
     }

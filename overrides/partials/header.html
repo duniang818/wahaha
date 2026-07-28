@@ -13,11 +13,10 @@
       <a href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}" class="dn-header__sitename">{{ config.site_name }}</a>
     </div>
 
-    {% if "navigation.tabs" in features %}
-      <div class="dn-header__nav">
-        {% include "partials/header-tabs.html" %}
-      </div>
-    {% endif %}
+    {# 始终渲染一级主导航；勿依赖 navigation.tabs（那会启用 Material 二级 tabs） #}
+    <div class="dn-header__nav">
+      {% include "partials/header-tabs.html" %}
+    </div>
 
     <div class="dn-header__actions">
       {% if config.theme.palette %}
