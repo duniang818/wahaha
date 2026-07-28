@@ -1,34 +1,42 @@
 {
-  "generatedAt": "2026-07-28T00:44:53.749Z",
+  "generatedAt": "2026-07-28T02:16:08.927Z",
   "rangeStart": "2024-01-01",
   "rangeEnd": "2026-12-31",
   "maxIntensity": 11,
   "days": {
-    "2026-07-27": {
-      "date": "2026-07-27",
-      "count": 2,
-      "tasksTotal": 9,
+    "2026-07-28": {
+      "date": "2026-07-28",
+      "count": 1,
+      "tasksTotal": 1,
       "tasksDone": 1,
       "posts": [
         {
           "title": "从零开发飞书云文档小组件：飞博虾踩坑实录",
-          "url": "/tech/feishu-docs-addon-dev/",
-          "path": "docs/tech/feishu-docs-addon-dev.md",
-          "nav": "技术",
+          "url": "/blog/posts/feishu-docs-addon-dev/",
+          "path": "docs/blog/posts/feishu-docs-addon-dev.md",
+          "nav": "博客",
           "tags": [
-            "技术",
-            "飞书",
+            "博客",
             "飞博虾",
-            "云文档小组件",
-            "GitHub Actions",
+            "飞书",
             "建站"
           ],
-          "excerpt": "记录飞博虾文档小组件从开放平台、权限、opdev 上传到 Actions 发布的完整链路，以及一堆差点把人劝退的坑。",
-          "thumb": "tech/assets/feishu-docs-addon/arch.png",
+          "excerpt": "这篇不是「官方文档复读」，而是我把「飞书里写的文章，一点按钮就进 GitHub Pages」这件事做通之后，按真实顺序写下来的开发笔记。中间走错的路、报错原文、以及最后为什么又能通了，都写在一起——你照着做，至少少绕两周。 目标形态很简单：…",
+          "thumb": "blog/posts/assets/feishu-docs-addon-dev/img-01.png",
           "tasksTotal": 1,
           "tasksDone": 1,
           "completion": 100
-        },
+        }
+      ],
+      "completion": 100,
+      "intensity": 1
+    },
+    "2026-07-27": {
+      "date": "2026-07-27",
+      "count": 1,
+      "tasksTotal": 8,
+      "tasksDone": 0,
+      "posts": [
         {
           "title": "Debian 13 工控机完整实施文档",
           "url": "/tech/debian-ipc-setup/",
@@ -48,8 +56,8 @@
           "completion": 0
         }
       ],
-      "completion": 11,
-      "intensity": 9
+      "completion": 0,
+      "intensity": 8
     },
     "2026-07-24": {
       "date": "2026-07-24",
@@ -476,7 +484,7 @@
         "2026-W31": 9,
         "2026-W30": 23
       },
-      "days": 5,
+      "days": 6,
       "intensity": 32,
       "posts": 22
     }
