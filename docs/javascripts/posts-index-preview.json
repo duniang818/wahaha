@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T10:05:51.359Z",
+  "generatedAt": "2026-07-28T00:44:53.749Z",
   "navTags": [
     "博客",
     "教育",
@@ -7,8 +7,28 @@
     "技术",
     "飞博虾"
   ],
-  "total": 22,
+  "total": 23,
   "posts": [
+    {
+      "title": "从零开发飞书云文档小组件：飞博虾踩坑实录",
+      "url": "/tech/feishu-docs-addon-dev/",
+      "path": "docs/tech/feishu-docs-addon-dev.md",
+      "date": "2026-07-27",
+      "nav": "技术",
+      "tags": [
+        "技术",
+        "飞书",
+        "飞博虾",
+        "云文档小组件",
+        "GitHub Actions",
+        "建站"
+      ],
+      "excerpt": "记录飞博虾文档小组件从开放平台、权限、opdev 上传到 Actions 发布的完整链路，以及一堆差点把人劝退的坑。",
+      "thumb": "tech/assets/feishu-docs-addon/arch.png",
+      "tasksTotal": 1,
+      "tasksDone": 1,
+      "completion": 100
+    },
     {
       "title": "Debian 13 工控机完整实施文档",
       "url": "/tech/debian-ipc-setup/",
@@ -95,24 +115,6 @@
         "建站"
       ],
       "excerpt": "前提 1. 飞书开放平台应用凭证（与 GitHub Actions 相同）： - FEISHUAPPID - FEISHUAPPSECRET 2. 测试文档已分享给该应用（或应用有文档读取权限） 3. 应用权限包含 docs:document.media:download（下载文…",
-      "thumb": "",
-      "tasksTotal": 1,
-      "tasksDone": 1,
-      "completion": 100
-    },
-    {
-      "title": "博客访问统计说明",
-      "url": "/feiboxia/analytics-setup/",
-      "path": "docs/feiboxia/analytics-setup.md",
-      "date": "2026-07-23",
-      "nav": "飞博虾",
-      "tags": [
-        "飞博虾",
-        "建站",
-        "部署",
-        "统计"
-      ],
-      "excerpt": "每篇博文自动统计（已启用） 仓库已接入 不蒜子 访问统计（国内可访问性更好）： - 页脚显示「本站 PV」 - 文章正文底部显示「本文阅读」（本页 PV） - 脚本加载失败时会显示「统计中」占位 脚本：docs/javascripts/visitor-badge.js 样式：do…",
       "thumb": "",
       "tasksTotal": 1,
       "tasksDone": 1,

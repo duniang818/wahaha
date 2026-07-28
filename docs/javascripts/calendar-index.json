@@ -1,15 +1,34 @@
 {
-  "generatedAt": "2026-07-27T10:05:51.359Z",
+  "generatedAt": "2026-07-28T00:44:53.749Z",
   "rangeStart": "2024-01-01",
   "rangeEnd": "2026-12-31",
   "maxIntensity": 11,
   "days": {
     "2026-07-27": {
       "date": "2026-07-27",
-      "count": 1,
-      "tasksTotal": 8,
-      "tasksDone": 0,
+      "count": 2,
+      "tasksTotal": 9,
+      "tasksDone": 1,
       "posts": [
+        {
+          "title": "从零开发飞书云文档小组件：飞博虾踩坑实录",
+          "url": "/tech/feishu-docs-addon-dev/",
+          "path": "docs/tech/feishu-docs-addon-dev.md",
+          "nav": "技术",
+          "tags": [
+            "技术",
+            "飞书",
+            "飞博虾",
+            "云文档小组件",
+            "GitHub Actions",
+            "建站"
+          ],
+          "excerpt": "记录飞博虾文档小组件从开放平台、权限、opdev 上传到 Actions 发布的完整链路，以及一堆差点把人劝退的坑。",
+          "thumb": "tech/assets/feishu-docs-addon/arch.png",
+          "tasksTotal": 1,
+          "tasksDone": 1,
+          "completion": 100
+        },
         {
           "title": "Debian 13 工控机完整实施文档",
           "url": "/tech/debian-ipc-setup/",
@@ -29,8 +48,8 @@
           "completion": 0
         }
       ],
-      "completion": 0,
-      "intensity": 8
+      "completion": 11,
+      "intensity": 9
     },
     "2026-07-24": {
       "date": "2026-07-24",
@@ -446,20 +465,20 @@
       "year": "2026",
       "months": {
         "2026-07": {
-          "intensity": 31,
-          "posts": 21
+          "intensity": 32,
+          "posts": 22
         }
       },
       "quarters": {
-        "2026-Q3": 31
+        "2026-Q3": 32
       },
       "weeks": {
-        "2026-W31": 8,
+        "2026-W31": 9,
         "2026-W30": 23
       },
       "days": 5,
-      "intensity": 31,
-      "posts": 21
+      "intensity": 32,
+      "posts": 22
     }
   }
 }
