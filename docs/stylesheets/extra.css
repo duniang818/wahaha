@@ -1454,3 +1454,66 @@
     bottom: 4.5rem;
   }
 }
+
+/* ========== 三栏铺满视口：左导航 | 中间正文（加宽）| 右目录 ========== */
+.md-grid {
+  max-width: none;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.md-header__inner,
+.md-main__inner,
+.md-footer__inner {
+  max-width: none;
+}
+
+@media screen and (min-width: 76.25em) {
+  .md-main__inner {
+    margin-top: 0.75rem;
+    min-height: calc(100vh - var(--md-header-height, 2.4rem) - 1rem);
+  }
+
+  /* 侧栏略收，把宽度让给正文 */
+  .md-sidebar--primary {
+    width: 13rem;
+  }
+
+  .md-sidebar--secondary {
+    width: 12.5rem;
+  }
+
+  .md-sidebar {
+    height: auto;
+  }
+
+  .md-content {
+    max-width: none;
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .md-content__inner {
+    margin-left: 1.25rem;
+    margin-right: 1.25rem;
+    max-width: none;
+  }
+
+  .md-typeset {
+    max-width: none;
+  }
+
+  .md-typeset img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* 中等宽度：仍尽量用满可用宽度 */
+@media screen and (min-width: 60em) and (max-width: 76.1875em) {
+  .md-content__inner {
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+}

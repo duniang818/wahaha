@@ -118,10 +118,41 @@ const KNOWN_DOC_SLUGS: Record<string, string> = {
 const PAT_HELP =
   "https://github.com/settings/tokens/new?scopes=repo,workflow&description=feiboxia-docs-addon";
 
-/** 面板固定尺寸 */
-const PANEL_SIZE = { w: 340, h: 520 };
+/** 面板固定尺寸（对齐新首页） */
+const PANEL_SIZE = { w: 360, h: 640 };
 /** 收起时融入宿主横条 */
 const BAR_SIZE = { w: 340, h: 36 };
+/** 点关闭后短时禁止再展开，避免 hover/误触导致「关不掉」 */
+const EXPAND_BLOCK_MS = 900;
+
+/** 飞博虾产品说明（博客） */
+const PRODUCT_HELP_URL = "https://duniang818.github.io/wahaha/tech/feiboxia/";
+const TITLE_MAX = 100;
+
+function parseTags(text: string): string[] {
+  return String(text || "")
+    .split(/[,，]/)
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+function joinTags(tags: string[]): string {
+  return tags.join(",");
+}
+
+function navDisplay(navDir: string) {
+  const meta = NAV_META[navDir];
+  if (meta?.label) return `${meta.label} / ${navDir}`;
+  return navDir;
+}
+
+function formatPublishedAt(iso: string) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 
 async function setHostSize(w: number, h: number) {
   const bridge = DocMiniApp.Bridge as any;
@@ -152,6 +183,21 @@ const PLATFORMS: { id: PlatformId; name: string; auto: boolean }[] = [
   { id: "xhs", name: "小红书", auto: false },
   { id: "csdn", name: "CSDN", auto: false },
   { id: "zhihu", name: "知乎", auto: false },
+];
+
+/** 标签下拉预设（可多选；也可自定义输入） */
+const TAG_PRESETS = [
+  "飞书插件",
+  "GitHub",
+  "自动化",
+  "博客",
+  "技术",
+  "教育",
+  "旅行",
+  "生活",
+  "Debian",
+  "Docker",
+  "飞博虾",
 ];
 
 const STATUS_LABEL: Record<PublishStatus, string> = {
@@ -909,9 +955,16 @@ export function App() {
   const [collapsed, setCollapsed] = useState(false);
   const [docBinding, setDocBinding] = useState<DocBinding | null>(null);
   const [cmdJob, setCmdJob] = useState<JobTrack | null>(null);
+  const [platOpen, setPlatOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+  const [tagOpen, setTagOpen] = useState(false);
+  const [tagDraft, setTagDraft] = useState("");
+  const [lastPublishedAt, setLastPublishedAt] = useState("");
+  const [navRenameDraft, setNavRenameDraft] = useState<Record<string, string>>({});
   const busyRef = useRef(false);
   const collapsedRef = useRef(false);
   const pinOpen = useRef(false);
+  const expandBlockedUntil = useRef(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cfgSnapshot = useRef<Cfg | null>(null);
   /** Interaction 全量快照：每次写入必须合并，避免冲掉草稿/任务 */
@@ -1123,6 +1176,7 @@ export function App() {
   }, [collapsed]);
 
   async function expandPanel() {
+    if (Date.now() < expandBlockedUntil.current) return;
     if (!collapsedRef.current) return;
     await setHostSizeReliable(PANEL_SIZE.w, PANEL_SIZE.h);
     collapsedRef.current = false;
@@ -1133,6 +1187,8 @@ export function App() {
 
   async function collapsePanel() {
     if (collapsedRef.current) return;
+    // 先挡住随后的 mouseenter，再改尺寸
+    expandBlockedUntil.current = Date.now() + EXPAND_BLOCK_MS;
     collapsedRef.current = true;
     setCollapsed(true);
     document.documentElement.dataset.feiboxia = "collapsed";
@@ -1193,8 +1249,9 @@ export function App() {
 
         const binding = await applyDocBinding(merged, ctx.token);
         const last = inter?.lastAction as
-          | { nav?: string; title?: string; slug?: string; tags?: string }
+          | { nav?: string; title?: string; slug?: string; tags?: string; at?: string }
           | undefined;
+        if (last?.at) setLastPublishedAt(String(last.at));
 
         // 优先级：进行中任务草稿 > 文档草稿 > feishu-map > lastAction > 飞书标题
         const startNav =
@@ -1331,6 +1388,7 @@ export function App() {
                   setStatus("published");
                   setLinkedToDoc(true);
                   setStatusDetail(result.message || "已写入博客");
+                  setLastPublishedAt(new Date().toISOString());
                 } else if (active.cmd === "pull") {
                   setLinkedToDoc(true);
                   setStatus("published");
@@ -1433,8 +1491,10 @@ export function App() {
     const next = { ...cfg, navs: [...navs, v] };
     setCfg(next);
     saveLocalCfg(next);
+    void saveInteractionPatch({ feiboxiaCfg: next });
     setNav(v);
     setNewNav("");
+    setNavOpen(false);
     setMsg(`✓ 已添加栏目 ${v}`);
   }
 
@@ -1654,10 +1714,11 @@ export function App() {
         j => setCmdJob({ ...j, cmd })
       );
 
-      if (result.status === "success") {
+        if (result.status === "success") {
         setStatus("published");
         setLinkedToDoc(true);
         setStatusDetail(result.message || "已写入博客");
+        setLastPublishedAt(new Date().toISOString());
         setMsg(`✓ ${result.message || labels[cmd] + "成功"}`);
         await saveInteractionPatch({
           lastAction: {
@@ -1756,6 +1817,55 @@ export function App() {
     );
   }
 
+  function tagList() {
+    return parseTags(tagsText);
+  }
+
+  function setTagList(next: string[]) {
+    const joined = joinTags(next);
+    setTagsText(joined);
+    schedulePersistDraft({ tagsText: joined });
+  }
+
+  function addTagFromDraft() {
+    const t = tagDraft.trim().replace(/^#+/, "");
+    if (!t) return;
+    const cur = tagList();
+    if (cur.includes(t)) {
+      setTagDraft("");
+      return;
+    }
+    setTagList([...cur, t]);
+    setTagDraft("");
+  }
+
+  function removeTag(t: string) {
+    setTagList(tagList().filter(x => x !== t));
+  }
+
+  function toggleTag(t: string) {
+    const cur = tagList();
+    if (cur.includes(t)) setTagList(cur.filter(x => x !== t));
+    else setTagList([...cur, t]);
+  }
+
+  function tagOptions() {
+    const selected = tagList();
+    const set = new Set([...TAG_PRESETS, ...selected, ...tagsForNav(nav)]);
+    return [...set];
+  }
+
+  function actionsUrl() {
+    return `https://github.com/${cfg.githubRepo || "duniang818/wahaha"}/actions`;
+  }
+
+  function platformSummary() {
+    if (!selected.length) return "请选择平台";
+    return selected
+      .map(id => PLATFORMS.find(p => p.id === id)?.name || id)
+      .join("、");
+  }
+
   function renderCmdBar(extraClass = "") {
     return (
       <div className={`cmd-bar ${extraClass}`.trim()}>
@@ -1766,33 +1876,57 @@ export function App() {
           title="飞书有 · 线上无"
           onClick={() => void runCmd("send")}
         >
+          <svg className="cmd-svg" viewBox="0 0 24 24" aria-hidden>
+            <path
+              fill="currentColor"
+              d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"
+            />
+          </svg>
           发送
         </button>
         <button
           type="button"
-          className="cmd-btn primary"
+          className="cmd-btn outline"
           disabled={busy || !cmdFlags.republish}
           title="飞书有 · 线上有 · 有改动"
           onClick={() => void runCmd("republish")}
         >
+          <svg className="cmd-svg" viewBox="0 0 24 24" aria-hidden>
+            <path
+              fill="currentColor"
+              d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"
+            />
+          </svg>
           重新发送
         </button>
         <button
           type="button"
-          className="cmd-btn"
+          className="cmd-btn outline"
           disabled={busy || !cmdFlags.pull}
           title="飞书无绑定 · 线上有 · 保留并绑定"
           onClick={() => void runCmd("pull")}
         >
+          <svg className="cmd-svg" viewBox="0 0 24 24" aria-hidden>
+            <path
+              fill="currentColor"
+              d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
+            />
+          </svg>
           拉取
         </button>
         <button
           type="button"
-          className="cmd-btn danger"
+          className="cmd-btn outline danger"
           disabled={busy || !cmdFlags.revoke}
           title="飞书无绑定 · 线上有 · 删除线上"
           onClick={() => void runCmd("revoke")}
         >
+          <svg className="cmd-svg" viewBox="0 0 24 24" aria-hidden>
+            <path
+              fill="currentColor"
+              d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+            />
+          </svg>
           撤销
         </button>
       </div>
@@ -1816,12 +1950,10 @@ export function App() {
         className="shell collapsed bar-mode"
         ref={rootRef}
         onClick={() => void expandPanel()}
-        onMouseEnter={() => void expandPanel()}
-        onPointerEnter={() => void expandPanel()}
         role="button"
         tabIndex={0}
         aria-label="展开飞博虾"
-        title="飞博虾 · 移入或点击展开"
+        title="飞博虾 · 点击展开"
         onKeyDown={e => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
@@ -1843,62 +1975,67 @@ export function App() {
   }
 
   const confirmLabel = busy ? "处理中…" : "保存设置";
+  const titleLen = Array.from(title || "").length;
+  const showProgress =
+    Boolean(cmdJob) &&
+    (cmdJob!.status === "pending" ||
+      cmdJob!.status === "running" ||
+      cmdJob!.status === "success" ||
+      cmdJob!.status === "failure");
 
   return (
-    <div className="shell expanded" ref={rootRef}>
-      <button
-        type="button"
-        className="panel-min"
-        title="收起为小图标"
-        aria-label="收起为小图标"
-        onClick={e => {
-          e.stopPropagation();
-          collapsePanel();
-        }}
-      >
-        −
-      </button>
+    <div className="shell expanded home-v2" ref={rootRef}>
+      <header className="hd-v2">
+        <div className="brand-v2">
+          <span className="brand-icon" aria-hidden>
+            🦐
+          </span>
+          <span className="brand-slogan">让内容发布更简单</span>
+        </div>
+        <div className="hd-acts">
+          <button
+            type="button"
+            className="icon-btn"
+            title="设置"
+            aria-label="设置"
+            onClick={() => (showSetup ? closeSetup(false) : openSetup())}
+          >
+            ⚙
+          </button>
+          <button
+            type="button"
+            className="icon-btn"
+            title="飞博虾产品说明"
+            aria-label="产品说明"
+            onClick={() => void openExternal(PRODUCT_HELP_URL)}
+          >
+            📖
+          </button>
+          <button
+            type="button"
+            className="icon-btn"
+            title="关闭"
+            aria-label="关闭"
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              void collapsePanel();
+            }}
+            onPointerDown={e => e.stopPropagation()}
+          >
+            ×
+          </button>
+        </div>
+      </header>
+
       <div
         className="panel-body"
         ref={scrollRef}
         onScroll={onScrollPanel}
         onWheel={onWheelPanel}
       >
-        <header className="hd">
-          <div className="brand">
-            <span className="brand-icon" aria-hidden>
-              🦐
-            </span>
-            <div className="brand-name">
-              飞博<span>虾</span>
-            </div>
-          </div>
-          <div className="hd-right">
-            <span className={`st ${statusBadgeClass()}`}>{statusBadgeText()}</span>
-            <button
-              type="button"
-              className={`act setup ${showSetup ? "on" : ""}`}
-              onClick={() => (showSetup ? closeSetup(false) : openSetup())}
-            >
-              {showSetup ? "返回" : "设置"}
-            </button>
-          </div>
-        </header>
-        <p className="tiny muted status-line">
-          {statusDetail}
-          {docBinding?.fromMap ? (
-            <span className="binding-hint">
-              {" "}
-              · 已识别 {docBinding.navDir}/{docBinding.slug}
-            </span>
-          ) : null}
-        </p>
-
-        {!showSetup && renderCmdBar("cmd-bar-top")}
-        {!showSetup && renderJobProgress(cmdJob)}
-
         {showSetup ? (
-          <section className="panel">
+          <section className="card-v2">
             <p className="hint">PAT 必填（repo + workflow）。外站填备忘即可。</p>
             <label>GitHub PAT</label>
             <div className="pat-row">
@@ -1968,6 +2105,35 @@ export function App() {
               onBlur={onBlurField}
               placeholder="知乎备注"
             />
+            <label>线上博文 URL（拉取 / 撤销用）</label>
+            <input
+              value={onlinePostUrl}
+              onChange={e => {
+                const v = e.target.value;
+                setOnlinePostUrl(v);
+                schedulePersistDraft({ onlinePostUrl: v });
+              }}
+              onFocus={onFocusField}
+              onBlur={() => {
+                onBlurField();
+                void refreshOrphanUrl(onlinePostUrl);
+              }}
+              placeholder="https://…/blog/posts/xxx/"
+            />
+            <label>slug</label>
+            <input
+              value={slug}
+              onChange={e => {
+                const v = e.target.value;
+                setSlug(v);
+                schedulePersistDraft({ slug: v });
+              }}
+              onFocus={onFocusField}
+              onBlur={() => {
+                onBlurField();
+                void refreshStatus(cfg, nav, slug);
+              }}
+            />
             <div className="setup-acts">
               <button
                 type="button"
@@ -1988,206 +2154,337 @@ export function App() {
             </div>
           </section>
         ) : (
-          <section className="panel">
-            <p className="hint tiny muted">
-              发送/重新发送：当前飞书文档 → 博客；拉取/撤销：填下方线上 URL
-            </p>
-
-            <label>线上博文 URL（无绑定时填，用于拉取/撤销）</label>
-            <input
-              value={onlinePostUrl}
-              onChange={e => {
-                const v = e.target.value;
-                setOnlinePostUrl(v);
-                schedulePersistDraft({ onlinePostUrl: v });
-              }}
-              onFocus={onFocusField}
-              onBlur={() => {
-                onBlurField();
-                void refreshOrphanUrl(onlinePostUrl);
-              }}
-              placeholder="https://…/blog/posts/xxx/"
-            />
-
-            <label>对接平台</label>
-            <div className="plats">
-              {PLATFORMS.map(p => {
-                const on = selected.includes(p.id);
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    className={`plat ${on ? "on" : ""}`}
-                    onClick={() => togglePlat(p.id)}
-                  >
-                    <span className="plat-check">{on ? "✓" : ""}</span>
-                    <span className="plat-name">{p.name}</span>
-                  </button>
-                );
-              })}
+          <section className="card-v2">
+            <div className="field">
+              <label>发布状态</label>
+              <div className="status-row">
+                <span className={`status-pill ${statusBadgeClass()}`}>
+                  {status === "published" ? "✓ " : ""}
+                  {statusBadgeText()}
+                </span>
+                <span className="status-meta">
+                  {status === "published" && lastPublishedAt
+                    ? `最后发布于 ${formatPublishedAt(lastPublishedAt)}`
+                    : statusDetail || "尚未发布到博客"}
+                </span>
+              </div>
             </div>
 
-            <label>标题</label>
-            <input
-              value={title}
-              onChange={e => {
-                const v = e.target.value;
-                setTitle(v);
-                schedulePersistDraft({ title: v });
-              }}
-              onFocus={onFocusField}
-              onBlur={onBlurField}
-            />
-
-            <div className="nav-head">
-              <label>导航栏目</label>
-              <button
-                type="button"
-                className="linkish"
-                onClick={() => setEditingNav(v => !v)}
-              >
-                {editingNav ? "完成" : "管理栏目"}
-              </button>
+            <div className="field">
+              <label>发布到</label>
+              <div className={`ms-dd ${platOpen ? "open" : ""}`}>
+                <button
+                  type="button"
+                  className="ms-dd-trigger"
+                  onClick={() => {
+                    setPlatOpen(v => !v);
+                    setNavOpen(false);
+                    setTagOpen(false);
+                  }}
+                  onFocus={onFocusField}
+                >
+                  <span className="ms-dd-value">{platformSummary()}</span>
+                  <span className="ms-dd-caret">▾</span>
+                </button>
+                {platOpen ? (
+                  <div className="ms-dd-menu" role="listbox">
+                    {PLATFORMS.map(p => {
+                      const on = selected.includes(p.id);
+                      return (
+                        <label key={p.id} className={`ms-dd-item ${on ? "on" : ""}`}>
+                          <input
+                            type="checkbox"
+                            checked={on}
+                            onChange={() => togglePlat(p.id)}
+                          />
+                          <span>{p.name}</span>
+                          {p.auto ? (
+                            <em className="ms-dd-auto">自动</em>
+                          ) : null}
+                        </label>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
             </div>
 
-            {editingNav ? (
-              <div className="nav-edit">
-                {navs.map(n => (
-                  <div key={n} className="nav-row">
-                    <input
-                      defaultValue={n}
-                      onFocus={onFocusField}
-                      onBlur={e => {
-                        onBlurField();
-                        if (e.target.value.trim() !== n) {
-                          renameNav(n, e.target.value);
-                        }
-                      }}
-                    />
+            <div className="field">
+              <label>
+                文章标题 <span className="req">*</span>
+              </label>
+              <div className="title-wrap">
+                <textarea
+                  className="title-input"
+                  rows={2}
+                  maxLength={TITLE_MAX}
+                  value={title}
+                  onChange={e => {
+                    const v = e.target.value.slice(0, TITLE_MAX);
+                    setTitle(v);
+                    schedulePersistDraft({ title: v });
+                  }}
+                  onFocus={onFocusField}
+                  onBlur={onBlurField}
+                  placeholder="输入文章标题"
+                />
+                <span className="title-count">
+                  {titleLen} / {TITLE_MAX}
+                </span>
+              </div>
+            </div>
+
+            <div className="field">
+              <label>文章标签</label>
+              <div className={`ms-dd tag-dd ${tagOpen ? "open" : ""}`}>
+                <button
+                  type="button"
+                  className="ms-dd-trigger tag-trigger"
+                  onClick={() => {
+                    setTagOpen(v => !v);
+                    setPlatOpen(false);
+                    setNavOpen(false);
+                  }}
+                  onFocus={onFocusField}
+                >
+                  <div className="tag-trigger-chips">
+                    {tagList().length ? (
+                      tagList().map(t => (
+                        <span
+                          key={t}
+                          className="tag-chip"
+                          onClick={e => {
+                            e.stopPropagation();
+                            removeTag(t);
+                          }}
+                        >
+                          {t}
+                          <span className="tag-x" aria-hidden>
+                            ×
+                          </span>
+                        </span>
+                      ))
+                    ) : (
+                      <span className="ms-dd-placeholder">选择或添加标签</span>
+                    )}
+                  </div>
+                  <span className="ms-dd-caret">▾</span>
+                </button>
+                {tagOpen ? (
+                  <div className="ms-dd-menu tag-menu">
+                    {tagOptions().map(t => {
+                      const on = tagList().includes(t);
+                      return (
+                        <label key={t} className={`ms-dd-item ${on ? "on" : ""}`}>
+                          <input
+                            type="checkbox"
+                            checked={on}
+                            onChange={() => toggleTag(t)}
+                          />
+                          <span>{t}</span>
+                        </label>
+                      );
+                    })}
+                    <div className="tag-custom-row">
+                      <input
+                        className="tag-custom-input"
+                        value={tagDraft}
+                        onChange={e => setTagDraft(e.target.value)}
+                        onFocus={onFocusField}
+                        onKeyDown={e => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addTagFromDraft();
+                          }
+                        }}
+                        placeholder="自定义标签，回车添加"
+                      />
+                      <button
+                        type="button"
+                        className="ghost sm"
+                        onClick={addTagFromDraft}
+                      >
+                        添加
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="field">
+              <label>导航分类</label>
+              <div className={`ms-dd nav-dd ${navOpen ? "open" : ""}`}>
+                <button
+                  type="button"
+                  className="ms-dd-trigger"
+                  onClick={() => {
+                    setNavOpen(v => !v);
+                    setPlatOpen(false);
+                    setTagOpen(false);
+                    setEditingNav(false);
+                  }}
+                  onFocus={onFocusField}
+                >
+                  <span className="ms-dd-value">{navDisplay(nav)}</span>
+                  <span className="ms-dd-caret">▾</span>
+                </button>
+                {navOpen ? (
+                  <div className="ms-dd-menu nav-menu">
+                    {navs.map(n => (
+                      <div key={n} className={`nav-item ${n === nav ? "on" : ""}`}>
+                        {editingNav ? (
+                          <>
+                            <input
+                              className="nav-rename"
+                              value={navRenameDraft[n] ?? n}
+                              onChange={e =>
+                                setNavRenameDraft(prev => ({
+                                  ...prev,
+                                  [n]: e.target.value,
+                                }))
+                              }
+                              onFocus={onFocusField}
+                              onBlur={() => {
+                                onBlurField();
+                                const next = (navRenameDraft[n] ?? n).trim();
+                                if (next && next !== n) renameNav(n, next);
+                              }}
+                            />
+                            <button
+                              type="button"
+                              className="ghost sm"
+                              onClick={() => removeNav(n)}
+                            >
+                              删
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            className="nav-pick"
+                            onClick={() => {
+                              const nextTags = tagsForNav(n).join(",");
+                              setNav(n);
+                              setTagsText(nextTags);
+                              setNavOpen(false);
+                              void refreshStatus(cfg, n, slug);
+                              void persistDocDraft(
+                                docToken,
+                                buildDraft({ nav: n, tagsText: nextTags })
+                              );
+                            }}
+                          >
+                            {navDisplay(n)}
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <div className="nav-add-row">
+                      <input
+                        value={newNav}
+                        onChange={e => setNewNav(e.target.value)}
+                        onFocus={onFocusField}
+                        onBlur={onBlurField}
+                        placeholder="新增栏目，如 essays"
+                        onKeyDown={e => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addNav();
+                          }
+                        }}
+                      />
+                      <button type="button" className="ghost sm" onClick={addNav}>
+                        新增
+                      </button>
+                    </div>
                     <button
                       type="button"
-                      className="ghost sm"
-                      onClick={() => removeNav(n)}
+                      className="nav-edit-toggle"
+                      onClick={() => {
+                        setEditingNav(v => !v);
+                        if (!editingNav) {
+                          const draft: Record<string, string> = {};
+                          navs.forEach(n => {
+                            draft[n] = n;
+                          });
+                          setNavRenameDraft(draft);
+                        }
+                      }}
                     >
-                      删
+                      {editingNav ? "完成修改" : "修改旧栏目"}
                     </button>
                   </div>
-                ))}
-                <div className="nav-row">
-                  <input
-                    value={newNav}
-                    onChange={e => setNewNav(e.target.value)}
-                    onFocus={onFocusField}
-                    onBlur={onBlurField}
-                    placeholder="新栏目，如 essays"
-                  />
-                  <button type="button" className="ghost sm" onClick={addNav}>
-                    加
+                ) : null}
+              </div>
+            </div>
+
+            {showProgress ? (
+              <div className="field">
+                <div className="field-label-row">
+                  <label>发布进度</label>
+                  <button
+                    type="button"
+                    className="linkish prog-actions"
+                    onClick={() => void openExternal(actionsUrl())}
+                    title="在 GitHub Actions 查看详情"
+                  >
+                    查看 Actions →
                   </button>
                 </div>
+                <div className={`prog ${cmdJob?.status || ""}`}>
+                  <div className="prog-row">
+                    <div className="prog-bar" role="progressbar">
+                      <div
+                        className="prog-fill"
+                        style={{
+                          width: `${Math.min(100, cmdJob?.progress ?? 0)}%`,
+                        }}
+                      />
+                    </div>
+                    <span className="prog-pct">{cmdJob?.progress ?? 0}%</span>
+                  </div>
+                  <p className="prog-msg">
+                    {cmdJob?.message || "正在推送到 GitHub …"}
+                  </p>
+                </div>
               </div>
-            ) : (
-              <select
-                value={nav}
-                onChange={e => {
-                  const v = e.target.value;
-                  const nextTags = tagsForNav(v).join(",");
-                  setNav(v);
-                  setTagsText(nextTags);
-                  void refreshStatus(cfg, v, slug);
-                  void persistDocDraft(docToken, buildDraft({ nav: v, tagsText: nextTags }));
-                }}
-                onFocus={onFocusField}
-                onBlur={onBlurField}
-              >
-                {navs.map(n => (
-                  <option key={n} value={n}>
-                    {NAV_META[n]?.label ? `${NAV_META[n].label}（${n}）` : n}
-                  </option>
-                ))}
-              </select>
-            )}
+            ) : null}
 
-            <label>文档标签（与栏目一致，可改）</label>
-            <input
-              value={tagsText}
-              onChange={e => {
-                const v = e.target.value;
-                setTagsText(v);
-                schedulePersistDraft({ tagsText: v });
-              }}
-              onFocus={onFocusField}
-              onBlur={onBlurField}
-              placeholder="教育,飞博虾"
-            />
+            {renderCmdBar("cmd-bar-card")}
 
-            <label>slug</label>
-            <input
-              value={slug}
-              onChange={e => {
-                const v = e.target.value;
-                setSlug(v);
-                schedulePersistDraft({ slug: v });
-              }}
-              onFocus={onFocusField}
-              onBlur={() => {
-                onBlurField();
-                void refreshStatus(cfg, nav, slug);
-              }}
-            />
-
-            <div className="path-box" title="博客 URL 路径">
-              <span className="k">URL 路径（栏目 + slug）</span>
-              {urlPath}
-            </div>
-
-            <label>博客链接（可点击）</label>
-            <a
-              className="blog-link"
-              href={postUrl}
-              onClick={e => {
-                e.preventDefault();
-                void openExternal(postUrl);
-              }}
-            >
-              {postUrl}
-            </a>
-            <div className="quick">
-              <button
-                type="button"
-                className="chip"
-                onClick={() => {
-                  // 刷新状态时保留当前草稿参数，只更新发布状态
-                  void applyDocBinding(cfg, docToken).then(() => {
-                    void refreshStatus(cfg, nav, slug);
-                  });
-                  void refreshOrphanUrl(onlinePostUrl);
+            <p className={`msg ${msg.startsWith("失败") ? "err" : ""}`}>{msg}</p>
+            <div className="path-box tiny">
+              <span className="k">将发布到</span>
+              <a
+                className="blog-link"
+                href={postUrl}
+                onClick={e => {
+                  e.preventDefault();
+                  void openExternal(postUrl);
                 }}
               >
-                刷新状态
-              </button>
-              <button
-                type="button"
-                className="chip"
-                onClick={() =>
-                  openExternal(`https://github.com/${cfg.githubRepo}/actions`)
-                }
-              >
-                Actions
-              </button>
+                {postUrl}
+              </a>
             </div>
-
-            <details className="md-import-box md-import-paused">
-              <summary>导入 Markdown → 飞书正文（已暂停）</summary>
-              <p className="hint tiny muted">
-                飞书侧导入能力已可用，小组件内「上传 Markdown」入口暂时停用。请直接在飞书文档中编辑，再用上方「发送 / 重新发送」。
-              </p>
-            </details>
           </section>
         )}
-
-        <p className={`msg ${msg.startsWith("失败") ? "err" : ""}`}>{msg}</p>
       </div>
+
+      <footer className="foot-v2">
+        <div className="foot-brand">
+          <span aria-hidden>🦐</span>
+          <span>飞博虾 · 让内容发布更简单</span>
+        </div>
+        <button
+          type="button"
+          className="foot-help"
+          onClick={() => void openExternal(PRODUCT_HELP_URL)}
+          title="飞博虾产品说明"
+        >
+          帮助 <span aria-hidden>?</span>
+        </button>
+      </footer>
     </div>
   );
 }
