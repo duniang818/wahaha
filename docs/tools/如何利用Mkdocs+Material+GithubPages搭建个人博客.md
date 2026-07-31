@@ -40,7 +40,7 @@ mkdocs new yourfirst_blog_project
 
 进入目录查看项目结构，这是最简单的一个项目结构： `cd yourfirst_blog_project`
 
-![](tools/images/如何利用Mkdocs+Material+GithubPages搭建个人博客/1717481980941.png)
+<!-- 截图已移除：原始图片路径不存在 -->
 
 mkdocs.yml: 全局配置文件，非常重要
 

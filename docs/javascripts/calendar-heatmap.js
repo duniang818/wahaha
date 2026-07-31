@@ -251,19 +251,22 @@
       '<span class="dn-day-num">' +
       dayNum +
       "</span>" +
-      '<span class="dn-day-progress" style="--dn-done:' +
+      '<span class="dn-day-progress" style="--dn-pct:' +
       completion +
       '%" aria-hidden="true"></span>' +
       "</a>"
     );
   }
 
-  function summaryBarHtml(view, key, label, agg, vertical) {
+  function summaryBarHtml(view, key, label, agg, mode) {
     var max = (state.cal && state.cal.maxIntensity) || 1;
     var heat = heatClass(agg.intensity, max);
+    var barCls = "dn-sum-bar--h";
+    if (mode === "v") barCls = "dn-sum-bar--v";
+    else if (mode === "wide") barCls = "dn-sum-bar--wide";
     return (
       '<a class="dn-sum-bar ' +
-      (vertical ? "dn-sum-bar--v" : "dn-sum-bar--h") +
+      barCls +
       " " +
       heat +
       '" href="' +
@@ -279,7 +282,7 @@
       " · " +
       agg.completion +
       "%</span>" +
-      '<span class="dn-sum-progress" style="--dn-done:' +
+      '<span class="dn-sum-progress" style="--dn-pct:' +
       agg.completion +
       '%"></span>' +
       "</a>"
@@ -302,7 +305,7 @@
       '<div class="dn-week-days">' +
       cells.join("") +
       "</div>" +
-      summaryBarHtml("week", wkey, "周总结", agg, false) +
+      summaryBarHtml("week", wkey, "周总结", agg, "h") +
       "</div>"
     );
   }
@@ -341,7 +344,7 @@
       '<div class="dn-month-weeks">' +
       weeks.join("") +
       "</div></div>" +
-      summaryBarHtml("month", ym, "月总结", agg, true) +
+      summaryBarHtml("month", ym, "月总结", agg, "v") +
       "</div>"
     );
   }
@@ -368,7 +371,7 @@
       " 年第 " +
       q +
       " 季度</h2>" +
-      summaryBarHtml("quarter", qkey, "季总结", agg, false) +
+      summaryBarHtml("quarter", qkey, "季总结", agg, "wide") +
       "</div>" +
       '<div class="dn-quarter-months">' +
       months.join("") +
@@ -388,7 +391,7 @@
       "<h2>" +
       year +
       " 年热力地图</h2>" +
-      summaryBarHtml("year", String(year), "年总结", agg, false) +
+      summaryBarHtml("year", String(year), "年总结", agg, "wide") +
       "</div>" +
       quarters.join("") +
       "</section>"

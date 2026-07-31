@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T02:32:45.403Z",
+  "generatedAt": "2026-07-31T12:16:41.425Z",
   "navTags": [
     "博客",
     "教育",
@@ -9,19 +9,95 @@
   ],
   "posts": [
     {
-      "title": "从零开发飞书云文档小组件：飞博虾踩坑实录",
-      "url": "/blog/posts/feishu-docs-addon-dev/",
-      "path": "docs/blog/posts/feishu-docs-addon-dev.md",
-      "date": "2026-07-28",
+      "title": "博客评论系统双模式设计",
+      "url": "/blog/posts/comments-dual-mode-dev/",
+      "path": "docs/blog/posts/comments-dual-mode-dev.md",
+      "date": "2026-07-31",
       "nav": "博客",
       "tags": [
         "博客",
-        "飞博虾",
-        "飞书",
+        "技术",
+        "建站",
+        "评论",
+        "部署"
+      ],
+      "excerpt": "静态博客评论难题的折中方案：游客免登录评论 + GitHub Giscus 双模式，兼顾低门槛互动与正式讨论。",
+      "thumb": "",
+      "tasksTotal": 1,
+      "tasksDone": 1,
+      "completion": 100
+    },
+    {
+      "title": "旅行规划助手",
+      "url": "/travel/planner/",
+      "path": "docs/travel/planner.md",
+      "date": "2026-07-31",
+      "nav": "旅行",
+      "tags": [
+        "旅行"
+      ],
+      "excerpt": "正在加载旅行规划助手… ← 返回旅行首页",
+      "thumb": "",
+      "tasksTotal": 1,
+      "tasksDone": 1,
+      "completion": 100
+    },
+    {
+      "title": "旅行规划助手：从需求到实现",
+      "url": "/blog/posts/travel-planner-dev/",
+      "path": "docs/blog/posts/travel-planner-dev.md",
+      "date": "2026-07-31",
+      "nav": "博客",
+      "tags": [
+        "博客",
+        "技术",
+        "旅行",
+        "前端",
+        "建站",
+        "评论"
+      ],
+      "excerpt": "带孩子去山西旅游不知道怎么规划路线？用纯前端做一个智能旅行规划助手，含景点推荐、路线规划、行程生成。",
+      "thumb": "",
+      "tasksTotal": 1,
+      "tasksDone": 1,
+      "completion": 100
+    },
+    {
+      "title": "日历热力图组件开发全记录",
+      "url": "/blog/posts/calendar-heatmap-dev/",
+      "path": "docs/blog/posts/calendar-heatmap-dev.md",
+      "date": "2026-07-31",
+      "nav": "博客",
+      "tags": [
+        "博客",
+        "技术",
+        "MkDocs",
+        "前端",
         "建站"
       ],
-      "excerpt": "这篇不是「官方文档复读」，而是我把「飞书里写的文章，一点按钮就进 GitHub Pages」这件事做通之后，按真实顺序写下来的开发笔记。中间走错的路、报错原文、以及最后为什么又能通了，都写在一起——你照着做，至少少绕两周。 目标形态很简单：…",
-      "thumb": "blog/posts/assets/feishu-docs-addon-dev/img-01.png",
+      "excerpt": "从需求到实现：在 MkDocs 博客首页做一块 GitHub 风格的日历热力图，记录写作节奏与任务完成度。",
+      "thumb": "",
+      "tasksTotal": 1,
+      "tasksDone": 1,
+      "completion": 100
+    },
+    {
+      "title": "从零开发飞书云文档小组件：飞博虾踩坑实录",
+      "url": "/blog/posts/feishu-docs-addon-dev/",
+      "path": "docs/blog/posts/feishu-docs-addon-dev.md",
+      "date": "2026-07-27",
+      "nav": "博客",
+      "tags": [
+        "博客",
+        "技术",
+        "飞书",
+        "飞博虾",
+        "云文档小组件",
+        "GitHub Actions",
+        "建站"
+      ],
+      "excerpt": "记录飞博虾文档小组件从开放平台、权限、opdev 上传到 Actions 发布的完整链路，以及一堆差点把人劝退的坑。",
+      "thumb": "blog/posts/assets/feishu-docs-addon/arch.png",
       "tasksTotal": 1,
       "tasksDone": 1,
       "completion": 100
@@ -46,7 +122,7 @@
       "completion": 0
     },
     {
-      "title": "飞博虾",
+      "title": "飞博虾：飞书写作 + GitHub 发布",
       "url": "/tech/feiboxia/",
       "path": "docs/tech/feiboxia.md",
       "date": "2026-07-24",
@@ -58,25 +134,7 @@
         "建站",
         "部署"
       ],
-      "excerpt": "飞书里写、GitHub 上发。不需要自有公网。 产品结构 台 在哪 干什么 ------------------ 写作台 飞书云文档 编辑与预览 稿件箱 飞书多维表格台账 栏目、定时、状态 工作台壳 GitHub Pages 工作台 一个入口串起写作/发布 发布台 本机 feib…",
-      "thumb": "",
-      "tasksTotal": 1,
-      "tasksDone": 1,
-      "completion": 100
-    },
-    {
-      "title": "飞书写作 → 一键发布博客",
-      "url": "/tech/feishu-publish/",
-      "path": "docs/tech/feishu-publish.md",
-      "date": "2026-07-24",
-      "nav": "技术",
-      "tags": [
-        "技术",
-        "飞书",
-        "建站",
-        "统计"
-      ],
-      "excerpt": "为什么以前 2/3/4 不通？ 功能 失败原因 ---------------- 飞书 → 博客 本机 lark-cli 未配置应用（notconfigured），无法读文档 外站发布 微信缺 .env 凭证；小红书/CSDN/知乎官方无完整发文 API，只能导出 推荐工作流（飞…",
+      "excerpt": "飞书里写、GitHub 上发，不需要自有公网。从搭建博客仓库到一键发布的完整实操指南。",
       "thumb": "",
       "tasksTotal": 1,
       "tasksDone": 1,
@@ -96,23 +154,6 @@
       ],
       "excerpt": "<title完整部署实施命令文档（Windows11 → GitHub → Debian 工控机）</title 文档定位：从 Windows 宿主机到 Debian 触屏工控机的端到端一键部署，所有命令可直接复制执行。 目标环境：Wind…",
       "thumb": "tech/assets/windows11-github-debian/img-01.png",
-      "tasksTotal": 1,
-      "tasksDone": 1,
-      "completion": 100
-    },
-    {
-      "title": "本机测试：飞书带图重新发布",
-      "url": "/feiboxia/local-publish-test/",
-      "path": "docs/feiboxia/local-publish-test.md",
-      "date": "2026-07-23",
-      "nav": "飞博虾",
-      "tags": [
-        "飞博虾",
-        "飞书",
-        "建站"
-      ],
-      "excerpt": "前提 1. 飞书开放平台应用凭证（与 GitHub Actions 相同）： - FEISHUAPPID - FEISHUAPPSECRET 2. 测试文档已分享给该应用（或应用有文档读取权限） 3. 应用权限包含 docs:document.media:download（下载文…",
-      "thumb": "",
       "tasksTotal": 1,
       "tasksDone": 1,
       "completion": 100
@@ -229,7 +270,7 @@
         "旅行",
         "人文"
       ],
-      "excerpt": "三亚 [object Object] 上海 [object Object] 北京 [object Object] 广州 [object Object] 成都 [object Object] 杭州 [object Object] 西安 [object Object]",
+      "excerpt": "三亚 风俗/文化 说明 ----------------- 黎族织锦 国家级非遗，\"黎锦光辉艳若云\" 三月三节 黎族苗族传统节日，对歌、射箭、跳竹竿舞 崖州民歌 古崖州方言民歌，国家级非遗 水上人家 蛋家人以船为家，世代居于海上 冼夫人信俗 奉祀南北朝巾帼英雄冼太夫人 上海 风俗…",
       "thumb": "",
       "tasksTotal": 1,
       "tasksDone": 1,
@@ -262,7 +303,7 @@
         "旅行",
         "民族"
       ],
-      "excerpt": "待补充。",
+      "excerpt": "中国共有 56 个民族，其中汉族人口最多，其余 55 个为少数民族。以下按人口规模和文化影响力分组整理。 人口较多的少数民族 民族 人口（万） 主要分布 特色文化 ------------------------------------- 壮族 1957 广西、云南 壮锦、铜鼓、…",
       "thumb": "",
       "tasksTotal": 1,
       "tasksDone": 1,
@@ -301,36 +342,19 @@
       "completion": 100
     },
     {
-      "title": "用飞书写作 + GitHub Pages 建个人博客（可复制实操）",
-      "url": "/tech/feishu-github-blog-guide/",
-      "path": "docs/tech/feishu-github-blog-guide.md",
+      "title": "Obsidian 使用技巧",
+      "url": "/tools/obsidian/",
+      "path": "docs/tools/obsidian.md",
       "date": "2026-07-22",
       "nav": "技术",
       "tags": [
         "技术",
-        "飞博虾",
-        "飞书",
-        "建站",
-        "部署"
+        "工具",
+        "Obsidian",
+        "建站"
       ],
-      "excerpt": "不买服务器、不租公网：飞书里写文章，GitHub 托管博客。本文给出可直接照做的步骤与命令。",
-      "thumb": "",
-      "tasksTotal": 1,
-      "tasksDone": 1,
-      "completion": 100
-    },
-    {
-      "title": "终端博客助手",
-      "url": "/tech/blog-assistant/",
-      "path": "docs/tech/blog-assistant.md",
-      "date": "2026-07-22",
-      "nav": "技术",
-      "tags": [
-        "技术",
-        "飞书"
-      ],
-      "excerpt": "powershell cd D:\\my-blog npm run blog 飞书优先。完整说明见 飞书写作 → 一键发布。 菜单 键 功能 ---------- S 飞书配置 / 登录（首次必做） 1 飞书文档 → 博客（可推送） 2 创建飞书博客台账 3 从台账一键发布 4 重…",
-      "thumb": "",
+      "excerpt": "Obsidian 是基于本地 Markdown 文件的个人知识管理工具，核心优势在于双向链接和图谱视图。 基础设置 附件目录 在当前库设置中指定附件目录，避免图片散落： 设置 → 文件与链接 → 附件默认存放路径 → \"在当前文件夹下指定的子文件夹\" 子文件夹名称：assets/…",
+      "thumb": "tools/path/to/image.png",
       "tasksTotal": 1,
       "tasksDone": 1,
       "completion": 100
@@ -353,23 +377,6 @@
       "completion": 100
     },
     {
-      "title": "1 每日一句",
-      "url": "/tools/配置mkdocs/",
-      "path": "docs/tools/配置mkdocs.md",
-      "date": "2026-07-21",
-      "nav": "技术",
-      "tags": [
-        "技术",
-        "建站",
-        "Obsidian"
-      ],
-      "excerpt": "[!quote] There is no greater harm than that of time wasted. — Michelangelo 2 文章主旨 - [X] 附件如何存放附件， 且在当前目录下设置附件目录 obsidian工具 ✅ 2024-06-04 - [X…",
-      "thumb": "tools/images/配置mkdocs/1717488132925.png",
-      "tasksTotal": 4,
-      "tasksDone": 3,
-      "completion": 75
-    },
-    {
       "title": "1 如何利用Mkdocs+Material+GithubPages搭建个人博客",
       "url": "/tools/如何利用Mkdocs+Material+GithubPages搭建个人博客/",
       "path": "docs/tools/如何利用Mkdocs+Material+GithubPages搭建个人博客.md",
@@ -380,32 +387,46 @@
         "建站"
       ],
       "excerpt": "在网上看见别人发表自己的文章，是不是非常羡慕，不仅撰写的内容非常的高质量，吸引人，而且他们的博客系统非常的美观且使用方便流畅？那么你是否也想时不时分享一些属于自己的内容给其他人呢？获得一丝丝的点赞和反馈呢？亦或在随着时间的流逝，在这个有记忆的互联网留下自己的足迹呢？ 我自己一直苦…",
-      "thumb": "tools/tools/images/如何利用Mkdocs+Material+GithubPages搭建个人博客/1717481980941.png",
+      "thumb": "",
       "tasksTotal": 1,
       "tasksDone": 1,
       "completion": 100
     },
     {
-      "title": "1 Happy new years eve!",
-      "url": "/blog/posts/01 firstblog/",
-      "path": "docs/blog/posts/01 firstblog.md",
-      "date": "2024-06-03",
-      "nav": "博客",
+      "title": "配置 MkDocs",
+      "url": "/tools/配置mkdocs/",
+      "path": "docs/tools/配置mkdocs.md",
+      "date": "2026-07-21",
+      "nav": "技术",
       "tags": [
-        "博客",
-        "工具",
-        "分析",
-        "汽车",
-        "生活",
-        "首页",
-        "编程"
+        "技术",
+        "建站",
+        "MkDocs",
+        "Obsidian"
       ],
-      "excerpt": "",
-      "thumb": "",
+      "excerpt": "MkDocs Material 主题的核心配置项与自定义技巧。 导航配置 Navigation tabs 导航页签：把 section 节单独显示在一个页面，让左侧边栏更简洁。 yaml theme: features: - navigation.sections Navigat…",
+      "thumb": "tools/assets/my-article/image.png",
       "tasksTotal": 1,
       "tasksDone": 1,
       "completion": 100
     }
   ],
-  "warnings": []
+  "warnings": [
+    {
+      "path": "travel/planner.md",
+      "missing": [
+        "date",
+        "tags",
+        "nav"
+      ],
+      "inferred": {
+        "title": "旅行规划助手",
+        "date": "2026-07-31",
+        "nav": "旅行",
+        "tags": [
+          "旅行"
+        ]
+      }
+    }
+  ]
 }

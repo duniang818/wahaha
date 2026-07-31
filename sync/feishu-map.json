@@ -51,5 +51,32 @@
     "updatedAt": "2026-07-28T02:32:38.967Z",
     "via": "manual-restore-content",
     "navDir": "blog/posts"
+  },
+  "HQdrdp7zKo9AiFxNgCFcsYnRnBg": {
+    "slug": "calendar-heatmap-dev",
+    "path": "blog/posts/calendar-heatmap-dev.md",
+    "navDir": "blog/posts",
+    "title": "日历热力图组件开发全记录",
+    "url": "https://my.feishu.cn/docx/HQdrdp7zKo9AiFxNgCFcsYnRnBg",
+    "updatedAt": "2026-07-31T12:16:28.244Z",
+    "via": "manual-create-from-local"
+  },
+  "PEKxdgu5AoKSYfxyzaRc32KCnoh": {
+    "slug": "comments-dual-mode-dev",
+    "path": "blog/posts/comments-dual-mode-dev.md",
+    "navDir": "blog/posts",
+    "title": "博客评论系统双模式设计",
+    "url": "https://my.feishu.cn/docx/PEKxdgu5AoKSYfxyzaRc32KCnoh",
+    "updatedAt": "2026-07-31T12:16:28.244Z",
+    "via": "manual-create-from-local"
+  },
+  "FPn3dyoQGoktXUx5xhDcZQqRnEh": {
+    "slug": "travel-planner-dev",
+    "path": "blog/posts/travel-planner-dev.md",
+    "navDir": "blog/posts",
+    "title": "旅行规划助手：从需求到实现",
+    "url": "https://my.feishu.cn/docx/FPn3dyoQGoktXUx5xhDcZQqRnEh",
+    "updatedAt": "2026-07-31T12:16:28.244Z",
+    "via": "manual-create-from-local"
   }
 }

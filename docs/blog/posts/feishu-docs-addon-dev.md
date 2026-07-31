@@ -8,6 +8,7 @@ draft: false
 feishu_doc: Zcj5d1SxhoGFtZxyHIHcLsOenAb
 feishu_url: "https://my.feishu.cn/docx/Zcj5d1SxhoGFtZxyHIHcLsOenAb"
 tags:
+  - 博客
   - 技术
   - 飞书
   - 飞博虾
@@ -358,7 +359,7 @@ bot 能出正文，CI 才有戏。
 | 博客工作台 | <https://duniang818.github.io/wahaha/feiboxia/workbench.html> |
 | 小组件 README | `feiboxia/docs-addon/README.md` |
 | 发布工作流 | `.github/workflows/feiboxia-doc-publish.yml` |
-| 飞书写作一键发博客 | [飞书写作 → 一键发布博客](feishu-publish.md) |
+| 飞书写作一键发博客 | [飞博虾：飞书写作 + GitHub 发布](../../tech/feiboxia.md) |
 
 ---
 

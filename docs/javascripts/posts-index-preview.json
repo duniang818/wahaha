@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T02:32:45.403Z",
+  "generatedAt": "2026-07-31T12:16:41.425Z",
   "navTags": [
     "博客",
     "教育",
@@ -10,19 +10,95 @@
   "total": 23,
   "posts": [
     {
-      "title": "从零开发飞书云文档小组件：飞博虾踩坑实录",
-      "url": "/blog/posts/feishu-docs-addon-dev/",
-      "path": "docs/blog/posts/feishu-docs-addon-dev.md",
-      "date": "2026-07-28",
+      "title": "博客评论系统双模式设计",
+      "url": "/blog/posts/comments-dual-mode-dev/",
+      "path": "docs/blog/posts/comments-dual-mode-dev.md",
+      "date": "2026-07-31",
       "nav": "博客",
       "tags": [
         "博客",
-        "飞博虾",
-        "飞书",
+        "技术",
+        "建站",
+        "评论",
+        "部署"
+      ],
+      "excerpt": "静态博客评论难题的折中方案：游客免登录评论 + GitHub Giscus 双模式，兼顾低门槛互动与正式讨论。",
+      "thumb": "",
+      "tasksTotal": 1,
+      "tasksDone": 1,
+      "completion": 100
+    },
+    {
+      "title": "旅行规划助手",
+      "url": "/travel/planner/",
+      "path": "docs/travel/planner.md",
+      "date": "2026-07-31",
+      "nav": "旅行",
+      "tags": [
+        "旅行"
+      ],
+      "excerpt": "正在加载旅行规划助手… ← 返回旅行首页",
+      "thumb": "",
+      "tasksTotal": 1,
+      "tasksDone": 1,
+      "completion": 100
+    },
+    {
+      "title": "旅行规划助手：从需求到实现",
+      "url": "/blog/posts/travel-planner-dev/",
+      "path": "docs/blog/posts/travel-planner-dev.md",
+      "date": "2026-07-31",
+      "nav": "博客",
+      "tags": [
+        "博客",
+        "技术",
+        "旅行",
+        "前端",
+        "建站",
+        "评论"
+      ],
+      "excerpt": "带孩子去山西旅游不知道怎么规划路线？用纯前端做一个智能旅行规划助手，含景点推荐、路线规划、行程生成。",
+      "thumb": "",
+      "tasksTotal": 1,
+      "tasksDone": 1,
+      "completion": 100
+    },
+    {
+      "title": "日历热力图组件开发全记录",
+      "url": "/blog/posts/calendar-heatmap-dev/",
+      "path": "docs/blog/posts/calendar-heatmap-dev.md",
+      "date": "2026-07-31",
+      "nav": "博客",
+      "tags": [
+        "博客",
+        "技术",
+        "MkDocs",
+        "前端",
         "建站"
       ],
-      "excerpt": "这篇不是「官方文档复读」，而是我把「飞书里写的文章，一点按钮就进 GitHub Pages」这件事做通之后，按真实顺序写下来的开发笔记。中间走错的路、报错原文、以及最后为什么又能通了，都写在一起——你照着做，至少少绕两周。 目标形态很简单：…",
-      "thumb": "blog/posts/assets/feishu-docs-addon-dev/img-01.png",
+      "excerpt": "从需求到实现：在 MkDocs 博客首页做一块 GitHub 风格的日历热力图，记录写作节奏与任务完成度。",
+      "thumb": "",
+      "tasksTotal": 1,
+      "tasksDone": 1,
+      "completion": 100
+    },
+    {
+      "title": "从零开发飞书云文档小组件：飞博虾踩坑实录",
+      "url": "/blog/posts/feishu-docs-addon-dev/",
+      "path": "docs/blog/posts/feishu-docs-addon-dev.md",
+      "date": "2026-07-27",
+      "nav": "博客",
+      "tags": [
+        "博客",
+        "技术",
+        "飞书",
+        "飞博虾",
+        "云文档小组件",
+        "GitHub Actions",
+        "建站"
+      ],
+      "excerpt": "记录飞博虾文档小组件从开放平台、权限、opdev 上传到 Actions 发布的完整链路，以及一堆差点把人劝退的坑。",
+      "thumb": "blog/posts/assets/feishu-docs-addon/arch.png",
       "tasksTotal": 1,
       "tasksDone": 1,
       "completion": 100
@@ -45,78 +121,6 @@
       "tasksTotal": 8,
       "tasksDone": 0,
       "completion": 0
-    },
-    {
-      "title": "飞博虾",
-      "url": "/tech/feiboxia/",
-      "path": "docs/tech/feiboxia.md",
-      "date": "2026-07-24",
-      "nav": "技术",
-      "tags": [
-        "技术",
-        "飞书",
-        "飞博虾",
-        "建站",
-        "部署"
-      ],
-      "excerpt": "飞书里写、GitHub 上发。不需要自有公网。 产品结构 台 在哪 干什么 ------------------ 写作台 飞书云文档 编辑与预览 稿件箱 飞书多维表格台账 栏目、定时、状态 工作台壳 GitHub Pages 工作台 一个入口串起写作/发布 发布台 本机 feib…",
-      "thumb": "",
-      "tasksTotal": 1,
-      "tasksDone": 1,
-      "completion": 100
-    },
-    {
-      "title": "飞书写作 → 一键发布博客",
-      "url": "/tech/feishu-publish/",
-      "path": "docs/tech/feishu-publish.md",
-      "date": "2026-07-24",
-      "nav": "技术",
-      "tags": [
-        "技术",
-        "飞书",
-        "建站",
-        "统计"
-      ],
-      "excerpt": "为什么以前 2/3/4 不通？ 功能 失败原因 ---------------- 飞书 → 博客 本机 lark-cli 未配置应用（notconfigured），无法读文档 外站发布 微信缺 .env 凭证；小红书/CSDN/知乎官方无完整发文 API，只能导出 推荐工作流（飞…",
-      "thumb": "",
-      "tasksTotal": 1,
-      "tasksDone": 1,
-      "completion": 100
-    },
-    {
-      "title": "完整部署实施命令文档",
-      "url": "/tech/windows11-github-debian/",
-      "path": "docs/tech/windows11-github-debian.md",
-      "date": "2026-07-24",
-      "nav": "技术",
-      "tags": [
-        "技术",
-        "Debian",
-        "建站",
-        "部署"
-      ],
-      "excerpt": "<title完整部署实施命令文档（Windows11 → GitHub → Debian 工控机）</title 文档定位：从 Windows 宿主机到 Debian 触屏工控机的端到端一键部署，所有命令可直接复制执行。 目标环境：Wind…",
-      "thumb": "tech/assets/windows11-github-debian/img-01.png",
-      "tasksTotal": 1,
-      "tasksDone": 1,
-      "completion": 100
-    },
-    {
-      "title": "本机测试：飞书带图重新发布",
-      "url": "/feiboxia/local-publish-test/",
-      "path": "docs/feiboxia/local-publish-test.md",
-      "date": "2026-07-23",
-      "nav": "飞博虾",
-      "tags": [
-        "飞博虾",
-        "飞书",
-        "建站"
-      ],
-      "excerpt": "前提 1. 飞书开放平台应用凭证（与 GitHub Actions 相同）： - FEISHUAPPID - FEISHUAPPSECRET 2. 测试文档已分享给该应用（或应用有文档读取权限） 3. 应用权限包含 docs:document.media:download（下载文…",
-      "thumb": "",
-      "tasksTotal": 1,
-      "tasksDone": 1,
-      "completion": 100
     }
   ]
 }

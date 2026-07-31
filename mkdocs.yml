@@ -43,8 +43,8 @@ exclude_docs: |
   private/**
 not_in_nav: |
   /private/**/*.md
-  /.md
   /calendar/**
+  /blog/posts/feishu-oneclick-test.md
 
 plugins:
   - search
@@ -84,6 +84,7 @@ extra_javascript:
   - javascripts/calendar-heatmap.js
   - javascripts/home-feed.js
   - javascripts/page-toc.js
+  - javascripts/travel-planner.js
   - https://gcore.jsdelivr.net/npm/marked@12.0.2/marked.min.js
   - https://gcore.jsdelivr.net/npm/easymde@2.18.0/dist/easymde.min.js
   - javascripts/comments-widget.js
@@ -116,8 +117,14 @@ nav:
   - 首页: index.md
   - 博客:
       - blog/posts/welcome.md
+      - 飞博虾小组件开发记: blog/posts/feishu-docs-addon-dev.md
+      - 日历热力图开发记: blog/posts/calendar-heatmap-dev.md
+      - 旅行规划助手开发记: blog/posts/travel-planner-dev.md
+      - 评论系统双模式设计: blog/posts/comments-dual-mode-dev.md
   - 飞博虾:
-      - feiboxia/index.md
+      - 飞博虾总览: feiboxia/index.md
+      - 完整指南: tech/feiboxia.md
+      - 访问统计: feiboxia/analytics-setup.md
   - 教育:
       - education/index.md
       - 世界名校: education/world-universities.md
@@ -125,6 +132,7 @@ nav:
       - 211 大学: education/211.md
   - 旅行:
       - travel/index.md
+      - 旅行规划助手: travel/planner.md
       - 5A 景区: travel/attractions-5a.md
       - 博物馆: travel/museums.md
       - 城市美食: travel/city-food.md
@@ -132,11 +140,9 @@ nav:
       - 民族概览: travel/ethnic-groups.md
   - 技术:
       - tech/index.md
-      - 完整部署实施命令文档: tech/windows11-github-debian.md
-      - 飞博虾: tech/feiboxia.md
       - 评论配置: tech/giscus-setup.md
-      - 飞书一键发布: tech/feishu-publish.md
-      - 终端博客助手: tech/blog-assistant.md
+      - Windows/Debian 部署: tech/windows11-github-debian.md
+      - Debian IPC 部署: tech/debian-ipc-setup.md
       - 工具:
           - tools/tools-index.md
           - 搭建博客: tools/如何利用Mkdocs+Material+GithubPages搭建个人博客.md
@@ -145,11 +151,11 @@ nav:
       - 分析:
           - analysis/analysis-index.md
           - Superset 部署: analysis/0 Xset 4.0.0在Windows上源码部署.md
+      - 开源翻译:
+          - gitfork/gitfork-index.md
   - 生活:
       - life/index.md
       - 生活笔记: life/life-index.md
       - 汽车: car/car-index.md
-      - Todo: todos/todos-index.md
-      - 博客索引: blog/blog-index.md
-      - GitFork: gitfork/gitfork-index.md
+      - 待办: todos/todos-index.md
   - 关于: about.md

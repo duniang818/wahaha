@@ -1,32 +1,32 @@
 ---
-author: duniang818
-creation date: 2024-06-03 14:50
-modification date: 星期一 3日 六月 2024 14:50:16
+title: 待办事项
+date: 2026-07-22
+nav: 生活
 tags:
-  - 工具
-  - 分析
-  - 汽车
   - 生活
-  - 首页
-  - 编程
-  - 其他
-title: Untitled
-summary: 记录待办项
-authors:
-  - "[atom, duniang818]"
+  - 待办
 ---
-<< [[2024-06-02]] | [[2024-06-04]] >>
 
-# 1 全部代办
+# 待办事项
 
-> [!quote] Chaos and Order are not enemies, only opposites.
-> — Richard Garriott
+## 博客维护
 
-- [ ]  mkdocs 如何自动将文件到不同的path下，进行目录导航
-- [ ]  mkdocs 在线编辑插件
-- [ ]  mkdocs渲染checkout box插件
-- [ ]  智能显示屏黑屏原因总结和分析
-- [ ]  superset run 突然不行了。提示ImportError: cannot import name 'appbuilder' from 'superset' (unknown location)
-- [ ]  给代码添加复制按钮
-- [ ]  设置文档的有侧边栏显示 “table of content”及TOC功能
-- [ ]  [以聚类为例 | 使用大语言模型LLM做文本分析 (360doc.com)](http://www.360doc.com/content/23/1120/21/73874201_1104707310.shtml)
+- [x] 日历热力图布局优化（全年一屏可见）
+- [x] 旅行规划助手开发（山西路线、景点推荐）
+- [x] 博客评论系统双模式（游客 + Giscus）
+- [x] 飞博虾重复博文合并整理
+- [x] 导航与标签体系梳理
+- [ ] 博客博文标签云页面
+- [ ] 移动端适配优化
+
+## 技术学习
+
+- [ ] 大语言模型文本分析实践
+- [ ] Superset 版本升级
+- [ ] MkDocs 在线编辑功能探索
+
+## 生活
+
+- [ ] 山西旅行计划细化
+- [ ] 汽车保养（变速箱油更换）
+- [ ] 整理云笔记到博客

@@ -1,26 +1,27 @@
 ---
-author: duniang818
-creation date: 2024-06-03 14:31
-modification date: 星期一 3日 六月 2024 14:31:16
+title: 开源文档翻译
+date: 2026-07-22
+nav: 技术
 tags:
-  - 工具
-  - 分析
-  - 汽车
-  - 生活
-  - 首页
-  - 编程
-  - 其他
-title: gitfork-index
-description: 
-authors:
-  - "[atom, duniang818]"
+  - 技术
+  - 开源
+  - 翻译
 ---
 
-<< [[2024-06-02]] | [[2024-06-04]] >>
+# 开源文档翻译
 
-# 1 gitfork-index
+收录优秀开源项目的官方文档翻译，供工作学习参考。
 
-> [!quote] If one is lucky, a solitary fantasy can totally transform one million realities.
-> — Maya Angelou
+## 翻译原则
 
-此文件夹主要是完成优秀开源项目官方库文档翻译工作，供工作学习使用。
+- 保留原始链接与出处
+- 术语首次出现标注英文原文
+- 代码块不翻译，仅注释翻译
+
+## 计划列表
+
+| 项目 | 状态 | 说明 |
+|------|------|------|
+| 待添加 | — | — |
+
+> 如有翻译需求，可在飞书台账中新建文档，标记导航栏目为 `gitfork` 后发布。

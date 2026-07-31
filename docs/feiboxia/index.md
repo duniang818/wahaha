@@ -11,13 +11,17 @@
 
 ## 怎么用
 
-1. **写作台**：在飞书云文档写随笔（编辑即预览）  
-2. **稿件箱**：台账登记文档链接、导航栏目、状态  
-3. **发布台**：本机执行一键发布，或打包队列交给 GitHub Actions  
+1. **写作台**：在飞书云文档写随笔（编辑即预览）
+2. **稿件箱**：台账登记文档链接、导航栏目、状态
+3. **发布台**：本机执行一键发布，或打包队列交给 GitHub Actions
 
 ```powershell
 cd D:\my-blog
 npm run feiboxia:ship
 ```
 
-完整说明见 [产品说明](../tech/feiboxia.md)。
+## 相关页面
+
+- [完整指南](../tech/feiboxia.md) — 从零搭建到日常发布的完整实操
+- [访问统计](analytics-setup.md) — 不蒜子 PV 与可选 GA4
+- [云文档小组件开发记](../blog/posts/feishu-docs-addon-dev.md) — 飞博虾小组件踩坑实录
